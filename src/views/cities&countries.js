@@ -31,7 +31,7 @@ export class Places extends Component {
     this.state = {
       isOpenState: false,
     };
-    console.log(this.props.state);
+
   }
   render() {
     return (
