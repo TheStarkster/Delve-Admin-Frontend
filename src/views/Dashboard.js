@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { Line, Bar } from "react-chartjs-2";
+import QueryCard from "../components/sub/querycard";
 import {
   Button,
   ButtonGroup,
@@ -125,6 +125,17 @@ class Dashboard extends React.Component {
                       </tr>
                     </thead>
                   </Table>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs="12">
+              <Card className="card-chart">
+                <CardBody>
+                  <QueryCard />
+                  <QueryCard />
+                  <QueryCard />
                 </CardBody>
               </Card>
             </Col>
