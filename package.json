@@ -9,6 +9,8 @@
   "dependencies": {
     "@types/react": "16.9.23",
     "classnames": "2.2.6",
+    "express": "^4.17.1",
+    "express-favicon": "^2.0.1",
     "history": "4.10.1",
     "jodit-react": "^1.0.42",
     "node-sass": "4.13.1",
@@ -21,16 +23,13 @@
     "react-notification-alert": "0.0.12",
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.0",
-    "reactstrap": "8.4.1",
-    "express": "^4.17.1",
-    "express-favicon": "^2.0.1"
+    "reactstrap": "8.4.1"
   },
   "scripts": {
     "start": "node server.js",
     "build": "react-scripts build && gulp licenses",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
     "compile-scss": "node-sass src/assets/scss/black-dashboard-react.scss src/assets/css/black-dashboard-react.css",
     "minify-sass": "node-sass src/assets/scss/black-dashboard-react.scss src/assets/css/black-dashboard-react.min.css --output-style compressed",
     "map-sass": "node-sass src/assets/scss/black-dashboard-react.scss src/assets/css/black-dashboard-react.css --source-map true"
