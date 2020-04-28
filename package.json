@@ -4,7 +4,6 @@
   "private": false,
   "dependencies": {
     "@types/react": "16.9.23",
-    "chart.js": "2.9.3",
     "classnames": "2.2.6",
     "history": "4.10.1",
     "jodit-react": "^1.0.42",
