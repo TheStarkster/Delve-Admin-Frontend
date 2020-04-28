@@ -86,3 +86,15 @@ a {
   padding: 12px;
   background-color: #3c3f5a;
 }
+.places-media {
+  background-color: #3a3d55;
+  margin: 12px;
+}
+.places-hr {
+  background-color: #ffffff38;
+}
+.state-name{
+  padding: 8px;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.205);
+}

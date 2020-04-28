@@ -6,6 +6,7 @@ import TableList from "views/TableList.js";
 import Typography from "views/Typography.js";
 import UserProfile from "views/UserProfile.js";
 import ManageEvents from "views/ManageEvents.js";
+import CitiesCountries from "views/cities&countries.js";
 
 var routes = [
   {
@@ -30,6 +31,14 @@ var routes = [
     rtlName: "إخطارات",
     icon: "tim-icons icon-calendar-60",
     component: ManageEvents,
+    layout: "/admin",
+  },
+  {
+    path: "/Cities-Countries",
+    name: "Cities & Countries",
+    rtlName: "إخطارات",
+    icon: "tim-icons icon-book-bookmark",
+    component: CitiesCountries,
     layout: "/admin",
   },
   {

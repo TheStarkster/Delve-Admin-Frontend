@@ -149,8 +149,8 @@ class Autocomplete extends Component {
         <input
           type="text"
           class="form-control d-xl-flex"
-          placeholder="Name"
           id="txtcategory"
+          placeholder={this.props.hint == null ? "Name" : this.props.hint}
           onChange={onChange}
           onKeyDown={onKeyDown}
           style={{
