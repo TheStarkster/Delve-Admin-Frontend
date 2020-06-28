@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { createRef } from "react";
 import Editor from "../components/sub/Editor";
 import Autocomplete from "../components/sub/autosuggest";
 import CategoryChips from "../components/sub/categorychips";
-import NotificationAlert from "react-notification-alert";
 
 import {
   Button,
@@ -30,16 +29,41 @@ const s50 = {
 class ManageEvents extends React.Component {
   constructor(props) {
     super(props);
+    this.EventAttendies = createRef();
     this.state = {
       createNewRepresentative: false,
       Representatives: [
         { Name: "Gurkaran Singh", id: 1 },
         { Name: "Ankit Yadav", id: 1 },
       ],
+      EventAttendies: [],
       RepresentativesCategory: [],
       TicketsSame: false,
     };
   }
+  haveAnythingEmpty = (formData) => {
+    if (
+      formData.get("ticketFileFrom") == "undefined" ||
+      (formData.get("isSameAsArriving") == "false" &&
+        formData.get("ticketFileTo") == "undefined")
+    ) {
+      return [true, "ticketFile"];
+    }
+    for (var pair of formData.entries()) {
+      if (pair[1] == "" || pair[1] == null || pair[1] == undefined) {
+        if (
+          (pair[0] == "dTicketFrom" ||
+            pair[0] == "dTicketTo" ||
+            pair[0] == "ticket-file-to") &&
+          formData.get("isSameAsArriving") == "true"
+        ) {
+          return [false, pair[0]];
+        }
+        return [true, pair[0]];
+      }
+    }
+    return [false];
+  };
   render() {
     return (
       <React.Fragment>
@@ -287,35 +311,56 @@ class ManageEvents extends React.Component {
               <Card>
                 <CardHeader>
                   <CardTitle tag="h2">Event Attendies</CardTitle>
-                  <h5 className="card-category">Add Attendies</h5>
                 </CardHeader>
                 <CardBody>
-                  <Form>
+                  <Form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      console.log(e);
+                    }}
+                    id="attendies"
+                  >
                     <Row>
                       <Col md="6">
                         <Row>
                           <Col md="12">
                             <FormGroup>
                               <label>Attendee Full Name</label>
-                              <Input type="text" placeholder="Name" />
+                              <Input
+                                type="text"
+                                placeholder="Name"
+                                id="AttendiesName"
+                              />
                             </FormGroup>
                           </Col>
                           <Col md="12">
                             <FormGroup>
                               <label>Attendee Phone</label>
-                              <Input type="number" placeholder="Phone" />
+                              <Input
+                                type="number"
+                                placeholder="Phone"
+                                id="AttendiesPhone"
+                              />
                             </FormGroup>
                           </Col>
                           <Col md="12">
                             <FormGroup>
                               <label>Attendee Email</label>
-                              <Input type="email" placeholder="Email" />
+                              <Input
+                                type="email"
+                                placeholder="Email"
+                                id="AttendiesEmail"
+                              />
                             </FormGroup>
                           </Col>
                           <Col md="12">
                             <FormGroup>
                               <label>Attendee Location</label>
-                              <Input type="text" placeholder="Location" />
+                              <Input
+                                type="text"
+                                placeholder="Location"
+                                id="AttendiesLocation"
+                              />
                             </FormGroup>
                           </Col>
                           <Col md="12">
@@ -327,12 +372,14 @@ class ManageEvents extends React.Component {
                                     <Input
                                       type="text"
                                       placeholder="Ticket From"
+                                      id="Arr_ticketFrom"
                                     ></Input>
                                   </Col>
                                   <Col md="6">
                                     <Input
                                       type="text"
                                       placeholder="Ticket To"
+                                      id="Arr_ticketTo"
                                     ></Input>
                                   </Col>
                                 </Row>
@@ -344,7 +391,7 @@ class ManageEvents extends React.Component {
                                       <Input
                                         type="file"
                                         className="custom-file-input"
-                                        id="ticket-file"
+                                        id="ticket-file-from"
                                       />
                                       <label
                                         className="custom-file-label"
@@ -363,7 +410,6 @@ class ManageEvents extends React.Component {
                               <label class="checkbox">
                                 <input
                                   type="checkbox"
-                                  value="SameTicketChk"
                                   id="SameTicketChkId"
                                   onChange={() => {
                                     this.setState({
@@ -391,12 +437,14 @@ class ManageEvents extends React.Component {
                                       <Input
                                         type="text"
                                         placeholder="Ticket From"
+                                        id="Dep_ticketFrom"
                                       ></Input>
                                     </Col>
                                     <Col md="6">
                                       <Input
                                         type="text"
                                         placeholder="Ticket To"
+                                        id="Dep_ticketTo"
                                       ></Input>
                                     </Col>
                                   </Row>
@@ -408,7 +456,7 @@ class ManageEvents extends React.Component {
                                         <Input
                                           type="file"
                                           className="custom-file-input"
-                                          id="ticket-file"
+                                          id="ticket-file-to"
                                         />
                                         <label
                                           className="custom-file-label"
@@ -431,7 +479,77 @@ class ManageEvents extends React.Component {
                             >
                               Cancel Update
                             </Button>
-                            <Button color="success" className="md-auto">
+                            <Button
+                              color="success"
+                              className="md-auto"
+                              type="submit"
+                              onClick={() => {
+                                var attendie = new FormData();
+                                attendie.append(
+                                  "name",
+                                  document.getElementById("AttendiesName").value
+                                );
+                                attendie.append(
+                                  "phone",
+                                  document.getElementById("AttendiesPhone")
+                                    .value
+                                );
+                                attendie.append(
+                                  "email",
+                                  document.getElementById("AttendiesEmail")
+                                    .value
+                                );
+                                attendie.append(
+                                  "location",
+                                  document.getElementById("AttendiesLocation")
+                                    .value
+                                );
+                                attendie.append(
+                                  "aTicketFrom",
+                                  document.getElementById("Arr_ticketFrom")
+                                    .value
+                                );
+                                attendie.append(
+                                  "aTicketTo",
+                                  document.getElementById("Arr_ticketTo").value
+                                );
+                                attendie.append(
+                                  "dTicketFrom",
+                                  document.getElementById("Dep_ticketFrom")
+                                    .value
+                                );
+                                attendie.append(
+                                  "dTicketTo",
+                                  document.getElementById("Dep_ticketTo").value
+                                );
+                                attendie.append(
+                                  "ticketFileFrom",
+                                  document.getElementById("ticket-file-from")
+                                    .files[0]
+                                );
+                                attendie.append(
+                                  "ticketFileTo",
+                                  document.getElementById("ticket-file-to")
+                                    .files[0]
+                                );
+                                attendie.append(
+                                  "isSameAsArriving",
+                                  document.getElementById("SameTicketChkId")
+                                    .checked
+                                );
+
+                                console.log(
+                                  document.getElementById("ticket-file-from")
+                                    .files[0]
+                                );
+                                console.log(attendie.get("ticketFileFrom"));
+                                var Ea = this.state.EventAttendies;
+                                Ea.push(attendie);
+                                this.setState({
+                                  EventAttendies: Ea,
+                                });
+                              }}
+                            >
                               Add
                             </Button>
                           </Col>
@@ -445,6 +563,23 @@ class ManageEvents extends React.Component {
                               <th>Attendee Phone</th>
                               <th className="text-center">Actions</th>
                             </tr>
+                            {this.state.EventAttendies.map((element) => (
+                              <tr
+                                style={{
+                                  backgroundColor: this.haveAnythingEmpty(
+                                    element
+                                  )[0]
+                                    ? "#0000005e"
+                                    : "transparent",
+                                }}
+                              >
+                                <td>{element.get("name")}</td>
+                                <td>{element.get("phone")}</td>
+                                <td>
+                                  <Button>Delete</Button>
+                                </td>
+                              </tr>
+                            ))}
                           </thead>
                         </Table>
                       </Col>
