@@ -1,12 +1,8 @@
 import Dashboard from "views/Dashboard.js";
-import Icons from "views/Icons.js";
-import Map from "views/Map.js";
-import Notifications from "views/Notifications.js";
-import TableList from "views/TableList.js";
-import Typography from "views/Typography.js";
 import UserProfile from "views/UserProfile.js";
 import ManageEvents from "views/ManageEvents.js";
 import CitiesCountries from "views/cities&countries.js";
+import Customers from "views/customers.js";
 
 var routes = [
   {
@@ -17,14 +13,6 @@ var routes = [
     component: Dashboard,
     layout: "/admin",
   },
-  // {
-  //   path: "/icons",
-  //   name: "Icons",
-  //   rtlName: "الرموز",
-  //   icon: "tim-icons icon-atom",
-  //   component: Icons,
-  //   layout: "/admin",
-  // },
   {
     path: "/manage-events",
     name: "Manage Events",
@@ -45,8 +33,16 @@ var routes = [
     path: "/user-profile",
     name: "Manage Users",
     rtlName: "ملف تعريفي للمستخدم",
-    icon: "tim-icons icon-single-02",
+    icon: "tim-icons icon-badge",
     component: UserProfile,
+    layout: "/admin",
+  },
+  {
+    path: "/customers",
+    name: "Customers",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "tim-icons icon-single-02",
+    component: Customers,
     layout: "/admin",
   },
 ];

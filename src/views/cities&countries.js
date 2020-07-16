@@ -1,10 +1,8 @@
-import React, { Component } from "react";
-import Autocomplete from "../components/sub/autosuggest";
+import React, { Component, createRef } from "react";
+import Autocomplete from "../components/sub/autosuggest-norm";
 import {
   Button,
   Input,
-  Form,
-  Badge,
   FormGroup,
   Card,
   CardHeader,
@@ -12,9 +10,10 @@ import {
   CardTitle,
   Row,
   Col,
-  Media,
-  Collapse,
+  Label,
 } from "reactstrap";
+import Axios from "../components/sub/axios";
+import MyComponentHook from "components/sub/cities&countriesTable";
 
 const s26 = {
   width: "100%",
@@ -25,145 +24,267 @@ const s50 = {
   marginTop: "14px",
 };
 
-export class Places extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isOpenState: false,
-    };
-    console.log(this.props.state);
-  }
-  render() {
-    return (
-      <>
-        <Row>
-          <Col md="4 d-flex  align-items-center">
-            <div className="state-name">{Object.keys(this.props.state)}</div>
-          </Col>
-          <Col md="4">
-            <Button
-              color="success"
-              onClick={(e) => {
-                e.preventDefault();
-                this.setState({
-                  isPlacesOpen: !this.state.isPlacesOpen,
-                });
-              }}
-            >
-              See Places
-            </Button>
-          </Col>
-        </Row>
-        <Row>
-          <Collapse
-            style={{
-              width: "100%",
-            }}
-            isOpen={this.state.isPlacesOpen}
-          >
-            {this.props.state[Object.keys(this.props.state)].map((places) => (
-              <Row>
-                <Col md="12">
-                  <Media className="places-media">
-                    <Media>
-                      <img
-                        src={places.imageUrl}
-                        style={{
-                          marginRight: "20px",
-                        }}
-                        width="150px"
-                      />
-                    </Media>
-                    <Media body>
-                      <Media heading>{places.name}</Media>
-                      {places.discription}
-                    </Media>
-                  </Media>
-                </Col>
-              </Row>
-            ))}
-          </Collapse>
-        </Row>
-        <hr className="places-hr" />
-      </>
-    );
-  }
-}
-
 export default class CitiesCountries extends Component {
   constructor(props) {
     super(props);
+    this.cityModalRef = createRef()
+    this.tableRef = createRef()
     this.state = {
-      isOpenState: false,
-      isOpen: false,
-      isPlacesOpen: false,
-      countries: [
-        // {
-        //   country: "india",
-        //   states: {
-        //     state: [
-        //       {
-        //         delhi: [
-        //           {
-        //             name: "Qutub Minar",
-        //             discription: "Sample Qutb Minar Discription",
-        //             imageUrl: "",
-        //           },
-        //           {
-        //             name: "India Gate",
-        //             discription: "Sample India Gate Discription",
-        //             imageUrl: "",
-        //           },
-        //         ],
-        //         mumbai: [
-        //           {
-        //             name: "Ajanta Caves",
-        //             discription: "Sample Ajanta Caves Discription",
-        //             imageUrl: "",
-        //           },
-        //         ],
-        //       },
-        //     ],
-        //   },
-        // },
-        {
-          country: "USA",
-          states: [
-            {
-              "washington dc": [
-                {
-                  name: "United States Capitol",
-                  discription: "Sample United States Capitol Discription",
-                  imageUrl:
-                    "https://cdn.britannica.com/06/77406-050-37596D86/United-States-Capitol-place-Washington-DC-US.jpg",
-                },
-                {
-                  name: "Lincoln Memorial",
-                  discription: "Sample Lincoln Memorial Discription",
-                  imageUrl:
-                    "https://upload.wikimedia.org/wikipedia/commons/7/78/Aerial_view_of_Lincoln_Memorial_-_east_side_EDIT.jpeg",
-                },
-              ],
-            },
-            {
-              "New York": [
-                {
-                  name: "Statue of Liberty National Monument",
-                  discription:
-                    "Sample Statue of Liberty National Monument Discription",
-                  imageUrl:
-                    "https://cropper.watch.aetnd.com/images.history.com/images/media/video/history_america_story_of_us_statue_of_liberty_sf_1158148/History_America_Story_of_Us_Statue_of_Liberty_SF_still_624x352.jpg?w=1440",
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      createdLocation:true,
+      locationName:"",
+      locationImageFile:null,
+      locationImageName:"Choose Image File",
+      locationDesc:"",
+
+      createdCity: true,
+      createdCountry: true,
+      modalCountryCreated: true,
+      countryName: "",
+
+      cityFile: null,
+      cityFileName: "Choose New File",
+      cityName: "",
+      suggestionCountries:[],
+      suggestionCity:[],
     };
   }
+  componentWillMount = () => {
+    Promise.all([
+      Axios.get("/location/country/get-all"),
+      Axios.get("/location/city/get-all"),
+    ]).then(([u, a]) => {
+     
+      this.setState({
+        suggestionCountries: u.data.map((a) => {
+          var b = {};
+          b["Name"] = a.name;
+          b["id"] = a.id;
+          return b;
+        }),
+        suggestionCity: a.data.map((a) => {
+          var b = {};
+          b["Name"] = a.name;
+          b["id"] = a.id;
+          return b;
+        }),
+      });
+    });
+  }
   render() {
+    var _countryRef = createRef()
+    var _cityRef = createRef()
     return (
       <React.Fragment>
+        {this.state.createdCountry ? null : (
+          <div className="Modal-Root">
+            <div
+              className="Country-Modal"
+              style={{
+                backgroundColor: "#27293d",
+              }}
+            >
+              <Col md="12">
+                <Row>
+                  <Col md="12">
+                    <h3
+                      style={{
+                        paddingTop: "18px",
+                      }}
+                    >
+                      Create New Country
+                    </h3>
+                  </Col>
+                  <Col md="12" style={{ paddingBottom: "16px" }}>
+                    <Label>Country Name</Label>
+                    <Input
+                      type="text"
+                      value={this.state.countryName}
+                      onChange={(e) => {
+                        this.setState({
+                          countryName: e.target.value,
+                        });
+                      }}
+                    />
+                  </Col>
+                </Row>
+                <Row className="justify-content-between">
+                  <Col
+                    md="12"
+                    xs="12"
+                    className="d-flex justify-content-end"
+                    style={{ padding: "18px" }}
+                  >
+                    <Button
+                      color="warning"
+                      onClick={() => {
+                        this.setState({
+                          createdCountry: !this.state.createdCountry,
+                          countryName: "",
+                        });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      color="success"
+                      disabled={!this.state.modalCountryCreated}
+                      onClick={(e) => {
+                        this.setState({
+                          modalCountryCreated: !this.state.modalCountryCreated,
+                        });
+                        var formdata = new FormData();
+                        formdata.append("name", this.state.countryName);
+                        Axios.post("/location/country/create", formdata).then(
+                          (u) => {
+                            if (u.data.status == "success") {
+                              var temp = this.state.suggestionCountries;
+                              temp.push({
+                                id: u.data.id,
+                                Name: this.state.countryName,
+                              });
+                              this.setState({
+                                suggestionCountries: temp,
+                                createdCountry: !this.state.createdCountry,
+                                countryName: "",
+                                modalCountryCreated: !this.state
+                                  .modalCountryCreated,
+                              });
+                            }
+                          }
+                        );
+                      }}
+                    >
+                      {this.state.modalCountryCreated ? "Save" : "Saving..."}
+                    </Button>
+                  </Col>
+                </Row>
+              </Col>
+            </div>
+          </div>
+        )}
+        {this.state.createdCity ? null : (
+          <div className="Modal-Root">
+            <div
+              className="Country-Modal"
+              style={{
+                backgroundColor: "#27293d",
+                padding: "19px",
+              }}
+            >
+              <Row>
+                <Col md="12">
+                  <h3
+                    style={{
+                      paddingTop: "18px",
+                    }}
+                  >
+                    Create New City
+                  </h3>
+                </Col>
+                <Col md="12" style={{ paddingBottom: "16px" }}>
+                  <div className="form-group d-inline mb-2">
+                    <Autocomplete
+                      suggestions={this.state.suggestionCountries}
+                      id={"category-suggest"}
+                      hint={"Country Name"}
+                      className="suggestions-in-container"
+                      ref={this.cityModalRef}
+                    />
+                  </div>
+                </Col>
+                <Col md="12" style={{ paddingBottom: "16px" }}>
+                  <Label>City Name</Label>
+                  <Input
+                    type="text"
+                    value={this.state.cityName}
+                    placeholder="City Name"
+                    onChange={(e) => {
+                      this.setState({
+                        cityName: e.target.value,
+                      });
+                    }}
+                  />
+                </Col>
+                <Col md="12">
+                  <Label>City Image</Label>
+                  <div className="custom-file mb-2">
+                    <Input
+                      type="file"
+                      className="custom-file-input"
+                      id="ticket-file"
+                      onChange={(e) => {
+                        this.setState({
+                          cityFile: e.target.files[0],
+                          cityFileName: e.target.files[0].name,
+                        });
+                      }}
+                    />
+                    <label
+                      className="custom-file-label"
+                      htmlFor="customFileThumbanail"
+                    >
+                      {this.state.cityFileName}
+                    </label>
+                  </div>
+                </Col>
+              </Row>
+              <Row className="justify-content-between">
+                <Col
+                  md="12"
+                  xs="12"
+                  className="d-flex justify-content-end"
+                  style={{ padding: "18px" }}
+                >
+                  <Button
+                    color="warning"
+                    onClick={() => {
+                      this.setState({
+                        createdCity: !this.state.createdCity,
+                        cityFile: null,
+                        cityFileName: "Choose New File",
+                        cityName: "",
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    color="success"
+                    disabled={!this.state.modalCountryCreated}
+                    onClick={(e) => {
+                      this.setState({
+                        modalCountryCreated: !this.state.modalCountryCreated,
+                      });
+                      var formdata = new FormData();
+                      formdata.append(
+                        "countryId",
+                        this.cityModalRef.current.returnId()
+                      );
+                      formdata.append("name", this.state.cityName);
+                      formdata.append("image", this.state.cityFile);
+                      Axios.post("/location/city/create", formdata).then(
+                        (u) => {
+                          if (u.data.status == "success") {
+                            this.setState({
+                              createdCity: !this.state.createdCity,
+                              cityFile: null,
+                              cityFileName: "Choose New File",
+                              cityName: "",
+                              modalCountryCreated: !this.state
+                                .modalCountryCreated,
+                            });
+                          }
+                        }
+                      );
+                    }}
+                  >
+                    {this.state.modalCountryCreated ? "Save" : "Saving..."}
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+          </div>
+        )}
         <div className="content">
           <Row>
             <Card>
@@ -187,10 +308,10 @@ export default class CitiesCountries extends Component {
                         style={{ flex: "1" }}
                       >
                         <Autocomplete
-                          suggestions={this.state.Representatives}
+                          suggestions={this.state.suggestionCountries}
                           id={"category-suggest"}
                           categoryChipHit={this.categoryChipHit}
-                          ref={this.categoryAutocompleteRef}
+                          ref={_countryRef}
                           hint={"Country Name"}
                         />
                       </div>
@@ -199,14 +320,13 @@ export default class CitiesCountries extends Component {
                           onClick={(e) => {
                             e.preventDefault();
                             this.setState({
-                              createNewRepresentative: !this.state
-                                .createNewRepresentative,
+                              createdCountry: !this.state.createdCountry,
                             });
                           }}
                           className="btn btn-success"
                           style={s50}
                         >
-                          Add
+                          New
                         </button>
                       </div>
                     </div>
@@ -221,10 +341,9 @@ export default class CitiesCountries extends Component {
                         style={{ flex: "1" }}
                       >
                         <Autocomplete
-                          suggestions={this.state.Representatives}
+                          suggestions={this.state.suggestionCity}
                           id={"category-suggest"}
-                          categoryChipHit={this.categoryChipHit}
-                          ref={this.categoryAutocompleteRef}
+                          ref={_cityRef}
                           hint={"City Name"}
                         />
                       </div>
@@ -233,14 +352,13 @@ export default class CitiesCountries extends Component {
                           onClick={(e) => {
                             e.preventDefault();
                             this.setState({
-                              createNewRepresentative: !this.state
-                                .createNewRepresentative,
+                              createdCity: !this.state.createdCity,
                             });
                           }}
                           className="btn btn-success"
                           style={s50}
                         >
-                          Add
+                          New
                         </button>
                       </div>
                     </div>
@@ -250,7 +368,16 @@ export default class CitiesCountries extends Component {
                   <Col md="6">
                     <FormGroup>
                       <label>Place of Interest</label>
-                      <Input placeholder="Place Name" type="text" />
+                      <Input
+                        placeholder="Place Name"
+                        type="text"
+                        value={this.state.locationName}
+                        onChange={(e) => {
+                          this.setState({
+                            locationName: e.target.value,
+                          });
+                        }}
+                      />
                     </FormGroup>
                   </Col>
                   <Col md="6">
@@ -260,13 +387,18 @@ export default class CitiesCountries extends Component {
                         <Input
                           type="file"
                           className="custom-file-input"
-                          id="ticket-file"
+                          onChange={(e) => {
+                            this.setState({
+                              locationImageFile: e.target.files[0],
+                              locationImageName: e.target.files[0].name,
+                            });
+                          }}
                         />
                         <label
                           className="custom-file-label"
                           htmlFor="customFileThumbanail"
                         >
-                          Choose Image File
+                          {this.state.locationImageName}
                         </label>
                       </div>
                     </FormGroup>
@@ -274,8 +406,54 @@ export default class CitiesCountries extends Component {
                   <Col md="12">
                     <FormGroup>
                       <label>Place Discription</label>
-                      <Input placeholder="Discription" type="text" />
+                      <Input
+                        placeholder="Description"
+                        type="text"
+                        value={this.state.locationDesc}
+                        onChange={(e) => {
+                          this.setState({
+                            locationDesc: e.target.value,
+                          });
+                        }}
+                      />
                     </FormGroup>
+                  </Col>
+                </Row>
+                <Row className="justify-content-between">
+                  <Col
+                    md="12"
+                    xs="12"
+                    className="d-flex justify-content-end"
+                    style={{ padding: "18px" }}
+                  >
+                    <Button
+                      color="success"
+                      disabled={!this.state.createdLocation}
+                      onClick={() => {
+                        this.setState({
+                          createdLocation:!this.state.createdLocation
+                        })
+                        var formdata = new FormData()
+                        formdata.append("name",this.state.locationName)
+                        formdata.append("desc", this.state.locationDesc);
+                        formdata.append("CityId",_cityRef.current.returnId())
+                        formdata.append("CountryId",_countryRef.current.returnId())
+                        formdata.append("image",this.state.locationImageFile)
+                        Axios.post("/location/create",formdata)
+                        .then(u => {
+                           this.setState({
+                             createdLocation: !this.state.createdLocation,
+                             locationName: "",
+                             locationImageFile: null,
+                             locationImageName: "Choose Image File",
+                             locationDesc: "",
+                           });
+                           this.tableRef.current.resetTable()
+                        })
+                      }}
+                    >
+                      {this.state.createdLocation ? "Save" : "Saving..."}
+                    </Button>
                   </Col>
                 </Row>
               </CardBody>
@@ -287,89 +465,12 @@ export default class CitiesCountries extends Component {
                 <Row>
                   <Col className="text-left" sm="6">
                     <CardTitle tag="h2">Countries & Cities</CardTitle>
-                    <h5 className="card-category">added countries</h5>
+                    <h5 className="card-category">added Locations</h5>
                   </Col>
                 </Row>
               </CardHeader>
               <CardBody>
-                {this.state.countries.map((country) => (
-                  <div>
-                    <Row>
-                      <Col md="4">
-                        <h4
-                          style={{
-                            cursor: "pointer",
-                          }}
-                          onClick={() => {
-                            this.setState({
-                              isOpen: !this.state.isOpen,
-                            });
-                          }}
-                        >
-                          {country.country}
-                        </h4>
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col md="12">
-                        <Collapse isOpen={this.state.isOpen}>
-                          <Card
-                            style={{
-                              marginBottom: "0px",
-                            }}
-                          >
-                            <CardBody
-                              style={{
-                                padding: "0px",
-                              }}
-                            >
-                              <Row>
-                                <Col md="12">
-                                  <div className="Collapse-Query-Header">
-                                    <Col
-                                      md="12"
-                                      onClick={() => {
-                                        this.setState({
-                                          isOpenState: !this.state.isOpenState,
-                                        });
-                                      }}
-                                    >
-                                      <label
-                                        style={{
-                                          cursor: "pointer",
-                                          fontSize: "16px",
-                                        }}
-                                      >
-                                        States
-                                      </label>
-                                    </Col>
-                                    <Collapse isOpen={this.state.isOpenState}>
-                                      <Card
-                                        style={{
-                                          marginBottom: "0px",
-                                        }}
-                                      >
-                                        <CardBody
-                                          style={{
-                                            color: "white",
-                                          }}
-                                        >
-                                          {country.states.map((state) => (
-                                            <Places state={state} />
-                                          ))}
-                                        </CardBody>
-                                      </Card>
-                                    </Collapse>
-                                  </div>
-                                </Col>
-                              </Row>
-                            </CardBody>
-                          </Card>
-                        </Collapse>
-                      </Col>
-                    </Row>
-                  </div>
-                ))}
+                <MyComponentHook />
               </CardBody>
             </Card>
           </Row>

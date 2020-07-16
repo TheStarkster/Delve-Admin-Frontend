@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from "react";
 import PropTypes from "prop-types";
+import { Input, Col,Row } from "reactstrap";
 
 class Autocomplete extends Component {
   static propTypes = {
@@ -12,12 +13,13 @@ class Autocomplete extends Component {
 
   constructor(props) {
     super(props);
-
+    console.log(props)
     this.state = {
       activeSuggestion: 0,
       filteredSuggestions: [],
       showSuggestions: false,
       userInput: "",
+      id:null,
     };
   }
 
@@ -35,6 +37,9 @@ class Autocomplete extends Component {
       userInput: e.currentTarget.value,
     });
   };
+  returnId = () => {
+    return this.state.id;
+  }
   removeId = (id) => {
     var idArr = document.getElementById(this.props.id).value.split(",");
     const index = idArr.indexOf(id);
@@ -43,31 +48,15 @@ class Autocomplete extends Component {
     }
     document.getElementById(this.props.id).value = idArr.join();
   };
-  removeAllIds = () => {
-    document.getElementById(this.props.id).value = ""
-  }
   onClick = (e) => {
-    var idArr =
-      document.getElementById(this.props.id).value === ""
-        ? []
-        : document.getElementById(this.props.id).value.split(",");
-    if (idArr.includes(e.target.id)) {
-      alert("Already Added this Catagory");
-    } else {
-      console.log(e.target.id);
-      idArr.push(e.target.id);
-      document.getElementById(this.props.id).value = idArr.join();
-      this.props.categoryChipHit({
-        name: e.currentTarget.innerText,
-        id: e.target.id,
-      });
-    }
     this.setState({
       activeSuggestion: 0,
       filteredSuggestions: [],
       showSuggestions: false,
-      userInput: "",
+      id: e.currentTarget.id,
+      userInput: e.currentTarget.firstChild.firstChild.innerText,
     });
+    this.props.setId(e.currentTarget.id);
   };
   onKeyDown = (e) => {
     const { activeSuggestion, filteredSuggestions } = this.state;
@@ -109,10 +98,13 @@ class Autocomplete extends Component {
 
     if (showSuggestions && userInput) {
       if (filteredSuggestions.length) {
-        var fieldLength = document.getElementById("txtcategory").clientWidth;
+        var fieldLength = document.getElementById(this.props.id).clientWidth;
         suggestionsListComponent = (
           <div className="row">
-            <ul class="suggestions" style={{ width: fieldLength }}>
+            <ul
+              class={`suggestions ${this.props.className}`}
+              style={{ width: fieldLength }}
+            >
               {filteredSuggestions.map((suggestion, index) => {
                 let className;
                 if (index === activeSuggestion) {
@@ -126,7 +118,12 @@ class Autocomplete extends Component {
                     id={suggestion.id}
                     onClick={onClick}
                   >
-                    {suggestion.Name}
+                    <Row>
+                      <Col md="6">{suggestion.Name}</Col>
+                      {suggestion.Phone != undefined ?  <Col md="6">
+                        <em>{suggestion.Phone}</em>
+                      </Col> : null}
+                    </Row>
                   </li>
                 );
               })}
@@ -134,32 +131,31 @@ class Autocomplete extends Component {
           </div>
         );
       } else {
-        var fieldLength = document.getElementById("txtcategory").clientWidth;
+        var fieldLength = document.getElementById(this.props.id).clientWidth;
         suggestionsListComponent = (
           <div className="row justify-content-center">
             <ul class="suggestions" style={{ width: fieldLength }}>
               <li>
-                <em>No suggestions</em>
+                <em>No suggestions (or wait)</em>
               </li>
             </ul>
           </div>
         );
       }
     }
-
     return (
       <Fragment>
-        <input type="hidden" id={this.props.id} />
-        <input
+        <Input
           type="text"
           class="form-control d-xl-flex"
-          id="txtcategory"
+          id={this.props.id}
           placeholder={this.props.hint == null ? "Name" : this.props.hint}
           onChange={onChange}
           onKeyDown={onKeyDown}
           style={{
-            marginTop: "17px",
+            marginTop: this.props.marginTop || "17px",
             paddingLeft: "12px",
+            marginBottom: "0px",
             Height: "38px",
             paddingBottom: "7px",
             width: "100%",

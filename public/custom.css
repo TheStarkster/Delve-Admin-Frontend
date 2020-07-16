@@ -23,6 +23,9 @@
   left: 0px;
   z-index: 99;
 }
+.suggestions-in-container {
+  transform: translateY(20px);
+}
 
 .suggestions li {
   padding: 0.5rem;
@@ -98,3 +101,27 @@ a {
   border-radius: 12px;
   background-color: rgba(0, 0, 0, 0.205);
 }
+.Country-Modal{
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  position: absolute;
+  width: 46%;
+  background-color: white;
+  border-radius: 12px;
+}
+.Modal-Root{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.644);
+  z-index: 9999;
+}
+.ModalAnimation-enter{
+  opacity: 0.01;
+}
+.ModalAnimation-enter.ModalAnimation-enter-active{
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
