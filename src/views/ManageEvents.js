@@ -1048,11 +1048,10 @@ class ManageEvents extends React.Component {
                                 ] = document.getElementById(
                                   "Arr_ticketTo"
                                 ).value;
-                                newAttendieObj["isSameAsArriving"] =
-                                  document.getElementById("SameTicketChkId")
-                                    .value == "on"
-                                    ? true
-                                    : false;
+                                newAttendieObj["isSameAsArriving"] = this.state
+                                  .TicketsSame
+                                  ? true
+                                  : false;
                                 //converting files to base64...
                                 let fileToLoad = document.getElementById(
                                   "ticket-file-from"
@@ -1065,36 +1064,32 @@ class ManageEvents extends React.Component {
                                 };
 
                                 //second file...
-                                  let filetwo = null;
-                                if (
-                                  document.getElementById("SameTicketChkId")
-                                    .value != "on"
-                                ) {
+                                let filetwo = null;
+                                if (!this.state.TicketsSame) {
                                   newAttendieObj[
-                                  "dTicketFrom"
-                                ] = document.getElementById(
-                                  "Dep_ticketFrom"
-                                ).value;
-                                newAttendieObj[
-                                  "dTicketTo"
-                                ] = document.getElementById(
-                                  "Dep_ticketTo"
-                                ).value;
+                                    "dTicketFrom"
+                                  ] = document.getElementById(
+                                    "Dep_ticketFrom"
+                                  ).value;
+                                  newAttendieObj[
+                                    "dTicketTo"
+                                  ] = document.getElementById(
+                                    "Dep_ticketTo"
+                                  ).value;
                                   let fileToLoadSecond = document.getElementById(
                                     "ticket-file-to"
                                   ).files[0];
+                                  console.log(fileToLoadSecond)
                                   let fileReadertwo = new FileReader();
                                   fileReadertwo.onload = function (
-                                    fileLoadedEvent
+                                    fileLoadedEvent1
                                   ) {
-                                    filetwo = fileLoadedEvent.target.result;
+                                    filetwo = fileLoadedEvent1.target.result;
+                                    newAttendieObj["ticketFileTo"] = filetwo;
                                   };
                                   fileReadertwo.readAsDataURL(fileToLoadSecond);
-                                newAttendieObj["ticketFileTo"] = filetwo;
                                 }
-                                
                                 fileReader.readAsDataURL(fileToLoad);
-
                                 var Ea = this.state.EventAttendies;
                                 Ea.push(newAttendieObj);
                                 console.log(Ea)
