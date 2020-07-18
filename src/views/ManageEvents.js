@@ -79,6 +79,8 @@ class ManageEvents extends React.Component {
       representativeIdArr: [],
       RepresentativesCategory: [],
       TicketsSame: false,
+      aTicketFileName: "Choose Ticket File",
+      dTicketFileName: "Choose Ticket File",
     };
   }
   createNewTransfer = () => {
@@ -171,17 +173,20 @@ class ManageEvents extends React.Component {
     eventFormData.append("CustomerId", this.state.eventBy);
     eventFormData.append("PlackCardImage", this.state.eventPlackCardImage);
     eventFormData.append("EventImage", this.state.eventImage);
+    eventFormData.append("CityId", this.state.cityId);
+    eventFormData.append("CountryId", this.state.countryId);
+    eventFormData.append("url", this.state.venueUrl);
+    eventFormData.append("venueName", this.state.venueName);
 
     Axios.post("/events/create", eventFormData).then((u) => {
       if (u.data.status == "success") {
         var EventId = u.data.EventId
     //represntatives...
     var representativeTemp = this.state.representativeArr;
-    representativeTemp.map((obj) => ({
+    var newRepresentativeArr = representativeTemp.map((obj) => ({
       ...obj,
       EventId: EventId,
     }));
-
     //event attendies...
     var EventAttendiesTemp = this.state.EventAttendies;
     var newAttendiesObj = EventAttendiesTemp.map((obj) => ({
@@ -191,21 +196,21 @@ class ManageEvents extends React.Component {
     //event transfers...
     var transfersTemp = this.state.transfers.map((a) => a.data);
     var newTransferObj = transfersTemp.map((obj) => ({
-      ...obj,
+      ...obj, 
       EventId: EventId,
     }));
 
     //event agendas...
     var eventAgendasTemp = this.state.agendas;
-    eventAgendasTemp.map((obj) => ({
+    var newAgendasObj = eventAgendasTemp.map((obj) => ({
       ...obj,
       EventId: EventId,
     }));
     Axios.post("/events/upload", {
       transfersData: newTransferObj,
       attendeesData: newAttendiesObj,
-      agendasData: eventAgendasTemp,
-      representatives: representativeTemp,
+      agendasData: newAgendasObj,
+      representatives: newRepresentativeArr,
     }).then((u) => {
       console.log(u);
     });
@@ -329,7 +334,7 @@ class ManageEvents extends React.Component {
                         </FormGroup>
                       </Col>
                       <Col md="3">
-                        <label>Pick File</label>
+                        <label>Pick Plack Card Image</label>
                         <div className="custom-file mb-2">
                           <Input
                             type="file"
@@ -350,7 +355,7 @@ class ManageEvents extends React.Component {
                         </div>
                       </Col>
                       <Col md="3">
-                        <label>Pick File</label>
+                        <label>Pick Event Image</label>
                         <div className="custom-file mb-2">
                           <Input
                             type="file"
@@ -919,12 +924,18 @@ class ManageEvents extends React.Component {
                                         type="file"
                                         className="custom-file-input"
                                         id="ticket-file-from"
+                                        onChange={(e) => {
+                                          this.setState({
+                                            aTicketFileName:
+                                              e.target.files[0].name,
+                                          });
+                                        }}
                                       />
                                       <label
                                         className="custom-file-label"
                                         htmlFor="customFileThumbanail"
                                       >
-                                        Choose Ticket File
+                                        {this.state.aTicketFileName}
                                       </label>
                                     </div>
                                   </Col>
@@ -984,12 +995,18 @@ class ManageEvents extends React.Component {
                                           type="file"
                                           className="custom-file-input"
                                           id="ticket-file-to"
+                                          onChange={(e) => {
+                                            this.setState({
+                                              dTicketFileName:
+                                                e.target.files[0].name,
+                                            });
+                                          }}
                                         />
                                         <label
                                           className="custom-file-label"
                                           htmlFor="customFileThumbanail"
                                         >
-                                          Choose Ticket File
+                                          {this.state.dTicketFileName}
                                         </label>
                                       </div>
                                     </Col>
@@ -1060,7 +1077,7 @@ class ManageEvents extends React.Component {
                                 let fileReader = new FileReader();
                                 fileReader.onload = function (fileLoadedEvent) {
                                   fileone = fileLoadedEvent.target.result;
-                                newAttendieObj["ticketFileFrom"] = fileone;
+                                  newAttendieObj["ticketFileFrom"] = fileone;
                                 };
 
                                 //second file...
@@ -1079,7 +1096,6 @@ class ManageEvents extends React.Component {
                                   let fileToLoadSecond = document.getElementById(
                                     "ticket-file-to"
                                   ).files[0];
-                                  console.log(fileToLoadSecond)
                                   let fileReadertwo = new FileReader();
                                   fileReadertwo.onload = function (
                                     fileLoadedEvent1
@@ -1092,10 +1108,11 @@ class ManageEvents extends React.Component {
                                 fileReader.readAsDataURL(fileToLoad);
                                 var Ea = this.state.EventAttendies;
                                 Ea.push(newAttendieObj);
-                                console.log(Ea)
                                 this.setState({
                                   EventAttendies: Ea,
                                   addedAttendie: !this.state.addedAttendie,
+                                  aTicketFileName: "Choose Ticket File",
+                                  dTicketFileName: "Choose Ticket File",
                                 });
                               }}
                             >
@@ -1114,27 +1131,31 @@ class ManageEvents extends React.Component {
                             </tr>
                             {this.state.EventAttendies.map((element) => (
                               <tr
-                              style={{
-                                backgroundColor: this.haveAnythingEmpty(
-                                  element
-                                )
-                                  ? "#0000005e"
-                                  : "transparent",
-                              }}
+                                style={{
+                                  backgroundColor: this.haveAnythingEmpty(
+                                    element
+                                  )
+                                    ? "#0000005e"
+                                    : "transparent",
+                                }}
                               >
                                 <td>{element["name"]}</td>
                                 <td>{element["phone"]}</td>
                                 <td>
-                                  <Button onClick={() => {
-                                    var temp = this.state.EventAttendies;
-                                    var index = temp.indexOf(element);
-                                    if (index > -1) {
-                                      temp.splice(index, 1);
-                                    }
-                                    this.setState({
-                                      EventAttendies:temp
-                                    })
-                                  }}>Delete</Button>
+                                  <Button
+                                    onClick={() => {
+                                      var temp = this.state.EventAttendies;
+                                      var index = temp.indexOf(element);
+                                      if (index > -1) {
+                                        temp.splice(index, 1);
+                                      }
+                                      this.setState({
+                                        EventAttendies: temp,
+                                      });
+                                    }}
+                                  >
+                                    Delete
+                                  </Button>
                                 </td>
                               </tr>
                             ))}

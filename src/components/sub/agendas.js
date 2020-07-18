@@ -58,6 +58,7 @@ export default class Agendas extends Component {
                     onChange={(e) => {
                       this.setState({
                         startTime: e.target.value,
+                        startDate: e.target.value,
                       });
                     }}
                   />
