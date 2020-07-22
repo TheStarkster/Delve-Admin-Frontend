@@ -6,11 +6,9 @@ class Autocomplete extends Component {
   static propTypes = {
     suggestions: PropTypes.instanceOf(Array),
   };
-
   static defaultProps = {
     suggestions: [],
   };
-
   constructor(props) {
     super(props);
     console.log(props)
@@ -22,7 +20,6 @@ class Autocomplete extends Component {
       id:null,
     };
   }
-
   onChange = (e) => {
     const { suggestions } = this.props;
     const userInput = e.currentTarget.value;
@@ -56,8 +53,20 @@ class Autocomplete extends Component {
       id: e.currentTarget.id,
       userInput: e.currentTarget.firstChild.firstChild.innerText,
     });
-    this.props.setId(e.currentTarget.id);
+    if(this.props.setId) this.props.setId(e.currentTarget.id);
   };
+  setData = (data) => {
+    this.setState({
+      id: this.props.suggestions.filter((e) => e.Name == data)[0].id,
+      userInput: data,
+    });
+  }
+  setDataUsingId = (Id) => {
+    this.setState({
+      id: this.props.suggestions.filter((e) => e.id == Id)[0].id,
+      userInput: this.props.suggestions.filter((e) => e.id == Id)[0].Name,
+    });
+  }
   onKeyDown = (e) => {
     const { activeSuggestion, filteredSuggestions } = this.state;
     if (e.keyCode === 13) {

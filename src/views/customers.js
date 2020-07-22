@@ -9,20 +9,33 @@ import {
   Col,
   Input,
 } from "reactstrap";
-import CustomerTable from '../components/sub/customersTable';
-import Axios from '../components/sub/axios';
+import CustomerTable from "../components/sub/customersTable";
+import Axios from "../components/sub/axios";
 export default class customers extends Component {
-    constructor(props){
-        super(props)
-        this.CustomerTableRef = createRef()
-        this.state = {
-            customerName:"",
-            customerPhone:"",
-            customerOrg:"",
-            customerEmail:"",
-            createdCutomer:true,
-        }
-    }
+  constructor(props) {
+    super(props);
+    this.CustomerTableRef = createRef();
+    this.state = {
+      customerName: "",
+      customerPhone: "",
+      customerOrg: "",
+      customerEmail: "",
+      createdCutomer: true,
+      isAnUpdate: false,
+      customerId:null,
+    };
+  }
+  setDataToFields = (data) => {
+    this.setState({
+      customerName: data.name,
+      customerPhone: data.phone,
+      customerOrg: data.organisation,
+      customerEmail: data.email,
+      isAnUpdate: !this.state.isAnUpdate,
+      customerId: data.id,
+    });
+  }
+
   render() {
     return (
       <>
@@ -98,24 +111,43 @@ export default class customers extends Component {
                         disabled={!this.state.createdCutomer}
                         color="success"
                         onClick={() => {
-                            this.setState({
-                                createdCutomer:!this.state.createdCutomer
-                            })
-                          Axios.post("customer/create", {
-                            name: this.state.customerName,
-                            organisation: this.state.customerOrg,
-                            email: this.state.customerEmail,
-                            phone: this.state.customerPhone,
-                          }).then((u) => {
-                           this.setState({
-                             createdCutomer: !this.state.createdCutomer,
-                             customerName: "",
-                             customerPhone: "",
-                             customerOrg: "",
-                             customerEmail: "",
-                           });
-                           this.CustomerTableRef.current.resetTable()
+                          this.setState({
+                            createdCutomer: !this.state.createdCutomer,
                           });
+                          if(!this.state.isAnUpdate){
+                            Axios.post("customer/create", {
+                              name: this.state.customerName,
+                              organisation: this.state.customerOrg,
+                              email: this.state.customerEmail,
+                              phone: this.state.customerPhone,
+                            }).then((u) => {
+                              this.setState({
+                                createdCutomer: !this.state.createdCutomer,
+                                customerName: "",
+                                customerPhone: "",
+                                customerOrg: "",
+                                customerEmail: "",
+                              });
+                              this.CustomerTableRef.current.resetTable();
+                            });
+                          } else {
+                            Axios.put("customer/update/"+this.state.customerId, {
+                              name: this.state.customerName,
+                              organisation: this.state.customerOrg,
+                              email: this.state.customerEmail,
+                              phone: this.state.customerPhone,
+                            }).then((u) => {
+                              this.setState({
+                                createdCutomer: !this.state.createdCutomer,
+                                customerName: "",
+                                customerPhone: "",
+                                customerOrg: "",
+                                customerEmail: "",
+                                isAnUpdate:!this.state.isAnUpdate
+                              });
+                              this.CustomerTableRef.current.resetTable();
+                            });
+                          }
                         }}
                       >
                         {this.state.createdCutomer ? "Save" : "Saving..."}
@@ -133,7 +165,10 @@ export default class customers extends Component {
                   <CardTitle tag="h2">Added Customers</CardTitle>
                 </CardHeader>
                 <CardBody>
-                  <CustomerTable ref={this.CustomerTableRef} />
+                  <CustomerTable
+                    ref={this.CustomerTableRef}
+                    setDataInParent={this.setDataToFields}
+                  />
                 </CardBody>
               </Card>
             </Col>

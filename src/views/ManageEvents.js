@@ -20,7 +20,6 @@ import {
   Table,
 } from "reactstrap";
 import Transfers from "components/sub/transfers";
-import { element } from "prop-types";
 const s26 = {
   width: "100%",
 };
@@ -36,6 +35,7 @@ class ManageEvents extends React.Component {
     this.EventAttendies = createRef();
     this.agendaRef = createRef();
     this.countryRef = createRef();
+    this.customerRef = createRef();
     this.cityRef = createRef();
 
     this.representativeNameRef = createRef();
@@ -44,6 +44,7 @@ class ManageEvents extends React.Component {
     this.representativeCategoryRef = createRef();
     this.RepresentativeCategoryAutocompleteRef = createRef();
     this.state = {
+      eventId: null,
       eventName: "",
       eventBy: null,
       eventFrom: "",
@@ -59,6 +60,7 @@ class ManageEvents extends React.Component {
       welcomeNote: "",
       countryId: null,
       cityId: null,
+      customerId: null,
       createNewRepresentative: false,
       createNewRepresentativeCategory: false,
       createdNewRepresentativeCategory: true,
@@ -83,7 +85,7 @@ class ManageEvents extends React.Component {
       dTicketFileName: "Choose Ticket File",
     };
   }
-  createNewTransfer = () => {
+  createNewTransfer = (data) => {
     var tempTansfers = [];
     tempTansfers = this.state.transfers;
     var transferRef = createRef();
@@ -92,13 +94,14 @@ class ManageEvents extends React.Component {
         <Transfers ref={transferRef} key={this.state.transfers.length + 1} />
       ),
       ref: transferRef,
-      isFilled: false,
-      data: {},
+      isFilled: data ? true : false,
+      data: data || {},
     });
     this.setState({
       transfers: tempTansfers,
-      rIsFilled: !this.state.rIsFilled,
+      rIsFilled: data ? !!this.state.rIsFilled : !this.state.rIsFilled,
     });
+    console.log(this.state.transfers);
   };
   haveAnythingEmpty = (formData) => {
     for (var key in formData) {
@@ -106,7 +109,49 @@ class ManageEvents extends React.Component {
         return true;
       }
     }
-    return false
+    return false;
+  };
+  setDataToFields = (u) => {
+    var data = JSON.parse(u).data;
+    console.log(new Date(data.liveFrom).toISOString().split("T")[0]);
+    this.setState({
+      eventId: data.id,
+      eventName: data.name,
+      eventBy: data.CustomerId,
+      eventFrom: new Date(data.liveFrom).toISOString().split("T")[0],
+      eventTo: new Date(data.liveTo).toISOString().split("T")[0],
+      venueName: data.Locations.name,
+      venueUrl: data.Locations.url,
+      customerId: data.CustomerId,
+      eventPlackCardImageName: data.plackCardImage.split("/")[
+        data.plackCardImage.split("/").length - 1
+      ],
+      eventImageName: data.eventImage.split("/")[
+        data.eventImage.split("/").length - 1
+      ],
+      welcomeNote: data.welcomeNote,
+      countryId: data.Locations.CountryId,
+      cityId: data.Locations.CityId,
+      agendas: data.Agendas.map((a) => {
+        a = { ...a, startTime: new Date(a.startDate + "T" + a.startTime) };
+        a = { ...a, endTime: new Date(a.startDate + "T" + a.endTime) };
+        return a;
+      }),
+      EventAttendies: data.Attendees,
+      representativeArr: data.Representatives_for_Events.map((a) => {
+        var obj = {};
+        obj["Name"] = a.Employees.name;
+        obj["Category"] = a.Representative_Categories.name;
+        return obj;
+      }),
+      representativeIdArr: data.Representatives_for_Events,
+    });
+    data.Transfers.map((elem) => {
+      this.createNewTransfer(elem);
+    });
+    this.countryRef.current.setDataUsingId(this.state.countryId);
+    this.cityRef.current.setDataUsingId(this.state.cityId);
+    this.customerRef.current.setDataUsingId(this.state.customerId);
   };
   componentWillMount = () => {
     Promise.all([
@@ -150,6 +195,8 @@ class ManageEvents extends React.Component {
           return b;
         }),
       });
+      if (localStorage.getItem("eventDataToUpdate"))
+        this.setDataToFields(localStorage.getItem("eventDataToUpdate"));
     });
   };
   categoryChipHit = (val) => {
@@ -172,50 +219,61 @@ class ManageEvents extends React.Component {
     eventFormData.append("liveTo", this.state.eventFrom);
     eventFormData.append("CustomerId", this.state.eventBy);
     eventFormData.append("PlackCardImage", this.state.eventPlackCardImage);
+    eventFormData.append(
+      "PlackCardImageName",
+      this.state.eventPlackCardImageName
+    );
     eventFormData.append("EventImage", this.state.eventImage);
+    eventFormData.append("EventImageName", this.state.eventImageName);
     eventFormData.append("CityId", this.state.cityId);
     eventFormData.append("CountryId", this.state.countryId);
     eventFormData.append("url", this.state.venueUrl);
     eventFormData.append("venueName", this.state.venueName);
 
-    Axios.post("/events/create", eventFormData).then((u) => {
-      if (u.data.status == "success") {
-        var EventId = u.data.EventId
-    //represntatives...
-    var representativeTemp = this.state.representativeArr;
-    var newRepresentativeArr = representativeTemp.map((obj) => ({
-      ...obj,
-      EventId: EventId,
-    }));
-    //event attendies...
-    var EventAttendiesTemp = this.state.EventAttendies;
-    var newAttendiesObj = EventAttendiesTemp.map((obj) => ({
-      ...obj,
-      EventId: EventId,
-    }));
-    //event transfers...
-    var transfersTemp = this.state.transfers.map((a) => a.data);
-    var newTransferObj = transfersTemp.map((obj) => ({
-      ...obj, 
-      EventId: EventId,
-    }));
+    if (this.state.eventId) {
+      //this is an update condition...
+      Axios.put("/events/update/"+this.state.eventId, eventFormData)
+      .then(u => {
+        console.log(u.data)
+      })
+    } else {
+      Axios.post("/events/create", eventFormData).then((u) => {
+        if (u.data.status == "success") {
+          var EventId = u.data.EventId;
+          //represntatives...
+          var representativeTemp = this.state.representativeArr;
+          var newRepresentativeArr = representativeTemp.map((obj) => ({
+            ...obj,
+            EventId: EventId,
+          }));
+          //event attendies...
+          var EventAttendiesTemp = this.state.EventAttendies;
+          var newAttendiesObj = EventAttendiesTemp.map((obj) => ({
+            ...obj,
+            EventId: EventId,
+          }));
+          //event transfers...
+          var transfersTemp = this.state.transfers.map((a) => a.data);
+          var newTransferObj = transfersTemp.map((obj) => ({
+            ...obj,
+            EventId: EventId,
+          }));
 
-    //event agendas...
-    var eventAgendasTemp = this.state.agendas;
-    var newAgendasObj = eventAgendasTemp.map((obj) => ({
-      ...obj,
-      EventId: EventId,
-    }));
-    Axios.post("/events/upload", {
-      transfersData: newTransferObj,
-      attendeesData: newAttendiesObj,
-      agendasData: newAgendasObj,
-      representatives: newRepresentativeArr,
-    }).then((u) => {
-      console.log(u);
-    });
+          //event agendas...
+          var eventAgendasTemp = this.state.agendas;
+          var newAgendasObj = eventAgendasTemp.map((obj) => ({
+            ...obj,
+            EventId: EventId,
+          }));
+          Axios.post("/events/upload", {
+            transfersData: newTransferObj,
+            attendeesData: newAttendiesObj,
+            agendasData: newAgendasObj,
+            representatives: newRepresentativeArr,
+          }).then((u) => {});
+        }
+      });
     }
-    });
   };
   setCountryId = (id) => {
     this.setState({
@@ -270,7 +328,7 @@ class ManageEvents extends React.Component {
                             marginTop={"0px"}
                             id={"txtEventBy"}
                             paddingBottom={"0px"}
-                            ref={this.countryRef}
+                            ref={this.customerRef}
                             setId={this.setCustomerId}
                           />
                         </FormGroup>
@@ -479,7 +537,6 @@ class ManageEvents extends React.Component {
                                   ).then((u) => {
                                     if (u.data.message == "success") {
                                       var temp = this.state.Representatives;
-                                      console.log(u.data);
                                       temp.push({
                                         Name: this.state.representativeName,
                                         Phone: this.state.representativePhone,
@@ -798,7 +855,6 @@ class ManageEvents extends React.Component {
                               });
                             });
                             var tempArr = this.state.representativeArr;
-                            console.log(representativesArray);
                             var newArr = tempArr.concat(representativesArray);
                             var unique = [];
                             var distinct = [];
@@ -1129,6 +1185,8 @@ class ManageEvents extends React.Component {
                               <th>Attendee Phone</th>
                               <th className="text-center">Actions</th>
                             </tr>
+                          </thead>
+                          <tbody>
                             {this.state.EventAttendies.map((element) => (
                               <tr
                                 style={{
@@ -1142,24 +1200,35 @@ class ManageEvents extends React.Component {
                                 <td>{element["name"]}</td>
                                 <td>{element["phone"]}</td>
                                 <td>
-                                  <Button
-                                    onClick={() => {
-                                      var temp = this.state.EventAttendies;
-                                      var index = temp.indexOf(element);
-                                      if (index > -1) {
-                                        temp.splice(index, 1);
-                                      }
-                                      this.setState({
-                                        EventAttendies: temp,
-                                      });
-                                    }}
-                                  >
-                                    Delete
-                                  </Button>
+                                  <Row>
+                                    <Col
+                                      md="6"
+                                      className="d-flex justify-content-center"
+                                      onClick={() => {
+                                        var temp = this.state.EventAttendies;
+                                        var index = temp.indexOf(element);
+                                        if (index > -1) {
+                                          temp.splice(index, 1);
+                                        }
+                                        this.setState({
+                                          EventAttendies: temp,
+                                        });
+                                      }}
+                                    >
+                                      <i className="tim-icons icon-trash-simple" />
+                                    </Col>
+                                    <Col
+                                      md="6"
+                                      className="d-flex justify-content-center"
+                                      onClick={() => {}}
+                                    >
+                                      <i className="tim-icons icon-pencil" />
+                                    </Col>
+                                  </Row>
                                 </td>
                               </tr>
                             ))}
-                          </thead>
+                          </tbody>
                         </Table>
                       </Col>
                     </Row>
@@ -1357,7 +1426,18 @@ class ManageEvents extends React.Component {
                                       }
                                     )}
                                 </td>
-                                <td>{element.endTime || "Onwards"}</td>
+                                <td>
+                                  {new Date(element.endTime).toDateString() +
+                                    " " +
+                                    new Date(element.endTime).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "numeric",
+                                        minute: "numeric",
+                                        hour12: true,
+                                      }
+                                    ) || "Onwards"}
+                                </td>
                                 <td>{element.venue}</td>
                                 <td>
                                   <Row>

@@ -1,12 +1,15 @@
-import React, { useState, useMemo, useCallback, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  forwardRef,
+} from "react";
 import DataTable, { createTheme } from "react-data-table-component";
 import Axios from "./axios";
 import swal from "sweetalert";
-import {
-  Button
-} from "reactstrap";
-
-const MyComponentHook = forwardRef((props,ref) => {
+import { Button } from "reactstrap";
+import { withRouter } from "react-router-dom";
+const EventTable = forwardRef((props, ref) => {
   const [overlayLoader, setOverlayLoader] = useState(false);
   const [progress, setProgress] = useState(true);
   const [data, setData] = useState([]);
@@ -24,76 +27,62 @@ const MyComponentHook = forwardRef((props,ref) => {
       disabled: "rgba(0,0,0,.12)",
     },
   });
-  const getData = () => {
-    Axios.get("/location/get-all").then((u) => {
-      setData(
-        u.data.map((a) => {
-          var obj = {};
-          obj["id"] = a.id
-          obj["Name"] = a.name;
-          obj["City"] = a.Cities.name;
-          obj["Country"] = a.Cities.Countries.name;
-          obj["Image"] = a.image;
-          obj["desc"] = a.desc;
-          return obj;
-        })
-      );
-      setProgress(false);
-    });
-  }
-  
-  useEffect(() => {
-    getData()
-  }, []);
 
+  useEffect(() => {
+    if(props.data != null){
+      setProgress(false);
+    }
+  }, [props.data]);
   const handleDeleteAction = (value) => {
-    console.log(value);
     swal({
       title: "Are you sure?",
-      text: "Once deleted, you will not be able to recover this content!",
+      text: "Once deleted, you will not be able to recover it!",
       icon: "warning",
       buttons: true,
       dangerMode: true,
     }).then(async (willDelete) => {
       if (willDelete) {
         var arr = data.filter((item) => item.id !== value.id);
-        console.log(arr)
         setData(arr);
-        await Axios.delete("/location/delete/" + value.id);
+        await Axios.delete("/customer/delete/" + value.id);
         swal("Poof! Your content has been deleted!", {
           icon: "success",
         });
       } else {
-        swal("Your content is safe!");
+        swal("Your Data is Safe!");
       }
     });
   };
   const handleEditAction = (value) => {
-    props.setDataInParent(value)
+    setOverlayLoader(true);
+    Axios.get("/events/read-for-admin/"+value.id)
+    .then(u=> {
+      setOverlayLoader(false);
+      localStorage.setItem("eventDataToUpdate", JSON.stringify(u));
+      return props.history.push('/admin/manage-events');
+    })
+    
   };
-  useImperativeHandle(ref, () => ({
-    resetTable: () => {
-      getData();
-    },
-  }));
-
-  const updateState = useCallback((state) => console.log(state));
   const columns = useMemo(() => [
     {
       name: "Name",
-      selector: "Name",
+      selector: "name",
     },
     {
-      name: "City",
-      selector: "City",
+      name: "Customer Name",
+      selector: "customerName",
     },
     {
-      cell: (row) => <img src={row.Image} alt="location image" />,
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      name: "Image",
-      selector: "Image",
+      name: "Organisation",
+      selector: "customerOrganisation",
+    },
+    {
+      name: "Starts On",
+      selector: "liveFrom",
+    },
+    {
+      name: "Ends On",
+      selector: "liveTo",
     },
     {
       cell: (row) => (
@@ -105,6 +94,8 @@ const MyComponentHook = forwardRef((props,ref) => {
           <i className="tim-icons icon-pencil" />
         </Button>
       ),
+      ignoreRowClick: true,
+      allowOverflow: true,
       button: true,
       name: "Edit",
       selector: "edit",
@@ -119,6 +110,7 @@ const MyComponentHook = forwardRef((props,ref) => {
           <i className="tim-icons icon-trash-simple" />
         </Button>
       ),
+      ignoreRowClick: true,
       button: true,
       name: "Delete",
       selector: "delete",
@@ -138,16 +130,15 @@ const MyComponentHook = forwardRef((props,ref) => {
         Loading...
       </div>
       <DataTable
-        data={data}
+        data={props.data || []}
         columns={columns}
         theme="solarized"
-        onSelectedRowsChange={updateState}
         pagination={true}
         progressPending={progress}
-        progressComponent={<h2>Hang on...😊</h2>}
+        progressComponent={<h2>Loading Events... 📅</h2>}
       />
     </>
   );
 });
 
-export default MyComponentHook;
+export default withRouter(EventTable);

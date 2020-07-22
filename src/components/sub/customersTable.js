@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import DataTable, { createTheme } from "react-data-table-component";
 import Axios from "./axios";
+import swal from "sweetalert";
 import { Button } from "reactstrap";
 const MyComponentHook = forwardRef((props, ref) => {
   const [overlayLoader, setOverlayLoader] = useState(false);
@@ -45,8 +46,29 @@ const MyComponentHook = forwardRef((props, ref) => {
   }, []);
   const handleDeleteAction = (value) => {
     console.log(value);
+    swal({
+      title: "Are you sure?",
+      text: "Once deleted, you will not be able to recover it!",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then(async (willDelete) => {
+      if (willDelete) {
+        var arr = data.filter((item) => item.id !== value.id);
+        console.log(arr);
+        setData(arr);
+        await Axios.delete("/customer/delete/" + value.id);
+        swal("Poof! Your content has been deleted!", {
+          icon: "success",
+        });
+      } else {
+        swal("Your Data is Safe!");
+      }
+    });
   };
-  const handleEditAction = (value) => {};
+  const handleEditAction = (value) => {
+    props.setDataInParent(value);
+  };
   const updateState = useCallback((state) => console.log(state));
   const columns = useMemo(() => [
     {
@@ -67,7 +89,11 @@ const MyComponentHook = forwardRef((props, ref) => {
     },
     {
       cell: (row) => (
-        <Button style={{ padding: "15px" }} className="btn btn-primary">
+        <Button
+          style={{ padding: "15px" }}
+          className="btn btn-primary"
+          onClick={() => handleEditAction(row)}
+        >
           <i className="tim-icons icon-pencil" />
         </Button>
       ),
