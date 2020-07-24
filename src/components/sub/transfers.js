@@ -26,6 +26,20 @@ export default class Transfers extends Component {
     returnState = () => {
         return this.state
     }
+    setData = (data) => {
+      this.setState({
+        name: data.name,
+        origin: data.origin,
+        destination: data.destination,
+        mode: data.mode,
+        vehicleNumber: data.vehicleNumber,
+        driverName: data.driverName,
+        distance: data.distance,
+        driverPhone: data.driverPhone,
+        journeyTime: data.journeyTime,
+        transferDate: data.transferDate.split("Z")[0],
+      });
+    }
     render() {
         return (
           <Col md="12">

@@ -125,3 +125,14 @@ a {
   transition: opacity 300ms ease-in;
 }
 
+.hoverable,.hoverable-danger{
+  border-radius: 12px;
+  padding: 12px;
+  transition: 400ms;
+}
+.hoverable:hover{
+  background-color: rgba(0, 0, 0, 0.623);
+}
+.hoverable-danger:hover{
+  background-color: rgba(231, 23, 23, 0.623);
+}

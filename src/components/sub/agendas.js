@@ -31,6 +31,16 @@ export default class Agendas extends Component {
         startDate: "",
       });
     }
+    setData = (data) => {
+      this.setState({
+        name: data.name,
+        venue: data.venue,
+        startTime: new Date(data.startTime).toISOString().split("Z")[0],
+        endTime: new Date(data.endTime).toISOString().split("Z")[0],
+        remarks: data.remarks,
+        startDate: data.startDate,
+      });
+    }
     render() {
         return (
             <Row>

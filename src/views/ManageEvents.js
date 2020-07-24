@@ -20,6 +20,7 @@ import {
   Table,
 } from "reactstrap";
 import Transfers from "components/sub/transfers";
+import dist from "react-notification-alert";
 const s26 = {
   width: "100%",
 };
@@ -78,11 +79,16 @@ class ManageEvents extends React.Component {
       Representatives: [],
       EventAttendies: [],
       representativeArr: [],
-      representativeIdArr: [],
       RepresentativesCategory: [],
       TicketsSame: false,
       aTicketFileName: "Choose Ticket File",
       dTicketFileName: "Choose Ticket File",
+      updatingAgenda: false,
+      updatingAttendee: false,
+      updatingRepresentatives: false,
+      updatingRepresentativesNameId: null,
+      updatingRepresentativesCategoryId: null,
+      updatingAttendeeId: null,
     };
   }
   createNewTransfer = (data) => {
@@ -113,7 +119,6 @@ class ManageEvents extends React.Component {
   };
   setDataToFields = (u) => {
     var data = JSON.parse(u).data;
-    console.log(new Date(data.liveFrom).toISOString().split("T")[0]);
     this.setState({
       eventId: data.id,
       eventName: data.name,
@@ -142,9 +147,11 @@ class ManageEvents extends React.Component {
         var obj = {};
         obj["Name"] = a.Employees.name;
         obj["Category"] = a.Representative_Categories.name;
+        obj["RepresentativeCategoryId"] = a.RepresentativeCategoryId;
+        obj["EmployeeId"] = a.EmployeeId;
+        obj["id"] = a.id;
         return obj;
       }),
-      representativeIdArr: data.Representatives_for_Events,
     });
     data.Transfers.map((elem) => {
       this.createNewTransfer(elem);
@@ -202,6 +209,12 @@ class ManageEvents extends React.Component {
   categoryChipHit = (val) => {
     this.representativeNameRef.current.addChip(val);
   };
+  categoryChipHitAfterRemoving = (val) => {
+    this.representativeCategoryRef.current.addChipByremoving(val);
+  };
+  representativesNameChipHitAfterRemoving = (val) => {
+    this.representativeNameRef.current.addChipByremoving(val);
+  };
   categoryNameChipHit = (val) => {
     this.representativeCategoryRef.current.addChip(val);
   };
@@ -232,10 +245,11 @@ class ManageEvents extends React.Component {
 
     if (this.state.eventId) {
       //this is an update condition...
-      Axios.put("/events/update/"+this.state.eventId, eventFormData)
-      .then(u => {
-        console.log(u.data)
-      })
+      Axios.put("/events/update/" + this.state.eventId, eventFormData).then(
+        (u) => {
+          console.log(u.data);
+        }
+      );
     } else {
       Axios.post("/events/create", eventFormData).then((u) => {
         if (u.data.status == "success") {
@@ -596,6 +610,9 @@ class ManageEvents extends React.Component {
                                 suggestions={this.state.Representatives}
                                 id={"txtRepresentatveSuggest"}
                                 categoryChipHit={this.categoryChipHit}
+                                ChipHitAfterRemoving={
+                                  this.representativesNameChipHitAfterRemoving
+                                }
                                 ref={this.RepresentativeNameAutocompleteRef}
                               />
                             </div>
@@ -720,6 +737,9 @@ class ManageEvents extends React.Component {
                                 suggestions={this.state.RepresentativesCategory}
                                 id={"txtRepresentatveCategorySuggest"}
                                 categoryChipHit={this.categoryNameChipHit}
+                                ChipHitAfterRemoving={
+                                  this.categoryChipHitAfterRemoving
+                                }
                                 ref={this.RepresentativeCategoryAutocompleteRef}
                               />
                             </div>
@@ -768,6 +788,9 @@ class ManageEvents extends React.Component {
                                   <Col
                                     md="6"
                                     className="d-flex justify-content-center"
+                                    style={{
+                                      padding: "0px",
+                                    }}
                                     onClick={() => {
                                       var temp = this.state.representativeArr;
                                       const index = temp.indexOf(a);
@@ -779,23 +802,38 @@ class ManageEvents extends React.Component {
                                       });
                                     }}
                                   >
-                                    <i className="tim-icons icon-trash-simple" />
+                                    <i
+                                      className="tim-icons icon-trash-simple hoverable-danger"
+                                      style={{ cursor: "pointer" }}
+                                    />
                                   </Col>
                                   <Col
+                                    style={{
+                                      padding: "0px",
+                                    }}
                                     md="6"
                                     className="d-flex justify-content-center"
                                     onClick={() => {
-                                      var temp = this.state.representativeArr;
-                                      const index = temp.indexOf(a);
-                                      if (index > -1) {
-                                        temp.splice(index, 1);
-                                      }
                                       this.setState({
-                                        representativeArr: temp,
+                                        updatingRepresentatives: true,
+                                        updatingRepresentativesNameId:a.EmployeeId,
+                                        updatingRepresentativesCategoryId:a.RepresentativeCategoryId
                                       });
+                                      this.RepresentativeNameAutocompleteRef.current.addItemToUpdate(
+                                        { id: a.EmployeeId, name: a.Name }
+                                      );
+                                      this.RepresentativeCategoryAutocompleteRef.current.addItemToUpdate(
+                                        {
+                                          id: a.RepresentativeCategoryId,
+                                          name: a.Category,
+                                        }
+                                      );
                                     }}
                                   >
-                                    <i className="tim-icons icon-pencil" />
+                                    <i
+                                      className="tim-icons icon-pencil hoverable"
+                                      style={{ cursor: "pointer" }}
+                                    />
                                   </Col>
                                 </Row>
                               </td>
@@ -807,19 +845,26 @@ class ManageEvents extends React.Component {
                   </Row>
                   <Row className="justify-content-between">
                     <Col md="6" xs="12" className="d-flex justify-content-end">
-                      {/* <Button
-                        color="warning"
+                      <Button
+                        color="success"
+                        className="md-auto"
+                        disabled={!this.state.updatingRepresentatives}
                         onClick={() => {
-                          var temp = this.state.transfers;
-                          temp.pop();
+                          this.representativeNameRef.current.removeAllChips();
+                          this.representativeCategoryRef.current.removeAllChips();
+
+                          //remove all ids form hidden inputs...
+                          this.RepresentativeNameAutocompleteRef.current.removeAllIds();
+                          this.RepresentativeCategoryAutocompleteRef.current.removeAllIds();
                           this.setState({
-                            transfers: temp,
-                            rIsFilled: !this.state.rIsFilled,
+                            updatingRepresentatives: false,
+                            updatingRepresentativesNameId: null,
+                            updatingRepresentativesCategoryId: null,
                           });
                         }}
                       >
-                        Cancel
-                      </Button> */}
+                        Cancel Update
+                      </Button>
                       <Button
                         color="success"
                         onClick={() => {
@@ -872,6 +917,7 @@ class ManageEvents extends React.Component {
                                   EmployeeId: newArr[i].EmployeeId,
                                   RepresentativeCategoryId:
                                     newArr[i].RepresentativeCategoryId,
+                                  id:newArr[i].id
                                 });
                                 unique[
                                   newArr[i].EmployeeId +
@@ -880,8 +926,25 @@ class ManageEvents extends React.Component {
                                 ] = 1;
                               }
                             }
+                            var index = distinct.indexOf(
+                              distinct.filter(
+                                (a) =>
+                                  a.EmployeeId == this.state.updatingRepresentativesNameId &&
+                                  a.RepresentativeCategoryId == this.state.updatingRepresentativesCategoryId
+                              )[0]
+                            );
+                            if (index > -1) {
+                              console.log(index);
+                              distinct.splice(
+                                index,
+                                1
+                              );
+                            }
                             this.setState({
                               representativeArr: distinct,
+                              updatingRepresentativesNameId:null,
+                              updatingRepresentativesCategoryId:null,
+                              updatingRepresentatives:!this.state.updatingRepresentatives
                             });
                             this.representativeNameRef.current.removeAllChips();
                             this.representativeCategoryRef.current.removeAllChips();
@@ -1075,7 +1138,40 @@ class ManageEvents extends React.Component {
                             <Button
                               color="success"
                               className="md-auto"
-                              disabled={!this.state.addedAttendie}
+                              disabled={!this.state.updatingAttendee}
+                              onClick={() => {
+                                document.getElementById("AttendiesName").value =
+                                  "";
+                                document.getElementById(
+                                  "AttendiesPhone"
+                                ).value = "";
+                                document.getElementById(
+                                  "AttendiesEmail"
+                                ).value = "";
+                                document.getElementById(
+                                  "AttendiesLocation"
+                                ).value = "";
+                                document.getElementById(
+                                  "Arr_ticketFrom"
+                                ).value = "";
+                                document.getElementById("Arr_ticketTo").value =
+                                  "";
+                                document.getElementById(
+                                  "Dep_ticketFrom"
+                                ).value = "";
+                                document.getElementById("Dep_ticketTo").value =
+                                  "";
+                                document.getElementById(
+                                  "SameTicketChkId"
+                                ).checked = false;
+                                this.setState({
+                                  TicketsSame: false,
+                                  aTicketFileName: "Choose Ticket File",
+                                  dTicketFileName: "Choose Ticket File",
+                                  updatingAttendee: false,
+                                  updatingAttendeeId:null,
+                                });
+                              }}
                             >
                               Cancel Update
                             </Button>
@@ -1125,6 +1221,8 @@ class ManageEvents extends React.Component {
                                   .TicketsSame
                                   ? true
                                   : false;
+                                newAttendieObj["aticket"] = this.state.aTicketFileName;
+                                newAttendieObj["dticket"] = this.state.dTicketFileName
                                 //converting files to base64...
                                 let fileToLoad = document.getElementById(
                                   "ticket-file-from"
@@ -1135,6 +1233,9 @@ class ManageEvents extends React.Component {
                                   fileone = fileLoadedEvent.target.result;
                                   newAttendieObj["ticketFileFrom"] = fileone;
                                 };
+                                if (fileToLoad) {
+                                  fileReader.readAsDataURL(fileToLoad);
+                                }
 
                                 //second file...
                                 let filetwo = null;
@@ -1161,15 +1262,68 @@ class ManageEvents extends React.Component {
                                   };
                                   fileReadertwo.readAsDataURL(fileToLoadSecond);
                                 }
-                                fileReader.readAsDataURL(fileToLoad);
                                 var Ea = this.state.EventAttendies;
+                                if(this.state.updatingAttendeeId){
+                                  var index = Ea.indexOf(Ea.filter(a => a.id == this.state.updatingAttendeeId)[0])
+                                  console.log(index)
+                                  console.log(
+                                    Ea.filter(
+                                      (a) =>
+                                        a.id == this.state.updatingAttendeeId
+                                    )[0]
+                                  );
+                                  if(index > -1) {
+                                    Ea.splice(index,1)
+                                  }
+                                  console.log(Ea)
+                                  var obj = {
+                                    ...newAttendieObj,
+                                    id: this.state.updatingAttendeeId,
+                                  };
+                                  console.log(obj)
+                                  Ea.push(obj)
+                                  console.log(Ea)
+                                }else 
+                              {
                                 Ea.push(newAttendieObj);
+
+                              }
                                 this.setState({
                                   EventAttendies: Ea,
                                   addedAttendie: !this.state.addedAttendie,
+                                  TicketsSame: false,
                                   aTicketFileName: "Choose Ticket File",
                                   dTicketFileName: "Choose Ticket File",
+                                  updatingAttendee: false,
+                                  updatingAttendeeId:null
                                 });
+                                  document.getElementById(
+                                    "AttendiesName"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "AttendiesPhone"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "AttendiesEmail"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "AttendiesLocation"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "Arr_ticketFrom"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "Arr_ticketTo"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "Dep_ticketFrom"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "Dep_ticketTo"
+                                  ).value = "";
+                                  document.getElementById(
+                                    "SameTicketChkId"
+                                  ).checked = false;
                               }}
                             >
                               Add
@@ -1203,6 +1357,9 @@ class ManageEvents extends React.Component {
                                   <Row>
                                     <Col
                                       md="6"
+                                      style={{
+                                        padding: "0px",
+                                      }}
                                       className="d-flex justify-content-center"
                                       onClick={() => {
                                         var temp = this.state.EventAttendies;
@@ -1215,14 +1372,65 @@ class ManageEvents extends React.Component {
                                         });
                                       }}
                                     >
-                                      <i className="tim-icons icon-trash-simple" />
+                                      <i className="tim-icons icon-trash-simple hoverable-danger" />
                                     </Col>
                                     <Col
                                       md="6"
+                                      style={{
+                                        padding: "0px",
+                                      }}
                                       className="d-flex justify-content-center"
-                                      onClick={() => {}}
+                                      onClick={() => {
+                                        this.setState({
+                                          updatingAttendeeId:element.id
+                                        })
+                                        document.getElementById(
+                                          "AttendiesName"
+                                        ).value = element["name"];
+                                        document.getElementById(
+                                          "AttendiesPhone"
+                                        ).value = element["phone"];
+                                        document.getElementById(
+                                          "AttendiesEmail"
+                                        ).value = element["email"];
+                                        document.getElementById(
+                                          "AttendiesLocation"
+                                        ).value = element["location"];
+                                        document.getElementById(
+                                          "Arr_ticketFrom"
+                                        ).value = element["aTicketFrom"];
+                                        document.getElementById(
+                                          "Arr_ticketTo"
+                                        ).value = element["aTicketTo"];
+                                        document.getElementById(
+                                          "Dep_ticketFrom"
+                                        ).value = element["dTicketFrom"] || "";
+                                        document.getElementById(
+                                          "Dep_ticketTo"
+                                        ).value = element["dTicketTo"] || "";
+                                        document.getElementById(
+                                          "SameTicketChkId"
+                                        ).checked =
+                                          element["dTicketFrom"] == null;
+                                        this.setState({
+                                          updatingAttendee: true,
+                                          TicketsSame:
+                                            element["dTicketFrom"] == null,
+                                          aTicketFileName: element[
+                                            "aticket"
+                                          ].split("/")[
+                                            element["aticket"].split("/")
+                                              .length - 1
+                                          ],
+                                          dTicketFileName:
+                                            element["dticket"]?.split("/")[
+                                              element["dticket"].split("/")
+                                                .length - 1
+                                            ] || "Choose Ticket File",
+                                        });
+                                      }}
                                     >
-                                      <i className="tim-icons icon-pencil" />
+                                      <i className="tim-icons icon-pencil hoverable" />
                                     </Col>
                                   </Row>
                                 </td>
@@ -1275,10 +1483,21 @@ class ManageEvents extends React.Component {
                             color="warning"
                             onClick={() => {
                               var temp = this.state.transfers;
-                              temp.pop();
-                              this.setState({
-                                transfers: temp,
-                                rIsFilled: !this.state.rIsFilled,
+                              temp.forEach((element) => {
+                                var index;
+                                if (!element.isFilled) {
+                                  if (!element.data.id) {
+                                    index = temp.indexOf(element);
+                                  }
+                                  element.isFilled = !element.isFilled;
+                                }
+                                if (index > -1) {
+                                  temp.splice(index, 1);
+                                }
+                                this.setState({
+                                  transfers: temp,
+                                  rIsFilled: !this.state.rIsFilled,
+                                });
                               });
                             }}
                           >
@@ -1330,6 +1549,9 @@ class ManageEvents extends React.Component {
                                       <Col
                                         md="6"
                                         className="d-flex justify-content-center"
+                                        style={{
+                                          padding: "0px",
+                                        }}
                                         onClick={() => {
                                           var temp = this.state.transfers;
                                           var index = temp.indexOf(element);
@@ -1341,13 +1563,33 @@ class ManageEvents extends React.Component {
                                           });
                                         }}
                                       >
-                                        <i className="tim-icons icon-trash-simple" />
+                                        <i className="tim-icons icon-trash-simple hoverable-danger" />
                                       </Col>
                                       <Col
                                         md="6"
+                                        style={{
+                                          padding: "0px",
+                                        }}
                                         className="d-flex justify-content-center"
+                                        onClick={() => {
+                                          var temp = this.state.transfers;
+                                          var index = temp.indexOf(element);
+                                          temp[index].isFilled = false;
+                                          // temp[index].ref.current.setData(element.data)
+                                          this.setState(
+                                            {
+                                              rIsFilled: !this.state.rIsFilled,
+                                              transfers: temp,
+                                            },
+                                            () => {
+                                              temp[index].ref.current.setData(
+                                                element.data
+                                              );
+                                            }
+                                          );
+                                        }}
                                       >
-                                        <i className="tim-icons icon-pencil" />
+                                        <i className="tim-icons icon-pencil hoverable" />
                                       </Col>
                                     </Row>
                                   </td>
@@ -1376,7 +1618,17 @@ class ManageEvents extends React.Component {
                       <Col md="6">
                         <Agendas ref={this.agendaRef} />
                         <Col md="12" className="d-flex justify-content-end">
-                          <Button color="success" className="md-auto" disabled>
+                          <Button
+                            color="success"
+                            className="md-auto"
+                            disabled={!this.state.updatingAgenda}
+                            onClick={() => {
+                              this.agendaRef.current.resetState();
+                              this.setState({
+                                updatingAgenda: false,
+                              });
+                            }}
+                          >
                             Cancel Update
                           </Button>
                           <Button
@@ -1444,6 +1696,9 @@ class ManageEvents extends React.Component {
                                     <Col
                                       md="6"
                                       className="d-flex justify-content-center"
+                                      style={{
+                                        padding: "0px",
+                                      }}
                                       onClick={() => {
                                         var temp = this.state.agendas;
                                         var index = temp.indexOf(element);
@@ -1455,13 +1710,22 @@ class ManageEvents extends React.Component {
                                         });
                                       }}
                                     >
-                                      <i className="tim-icons icon-trash-simple" />
+                                      <i className="tim-icons icon-trash-simple hoverable-danger" />
                                     </Col>
                                     <Col
                                       md="6"
+                                      style={{
+                                        padding: "0px",
+                                      }}
+                                      onClick={() => {
+                                        this.agendaRef.current.setData(element);
+                                        this.setState({
+                                          updatingAgenda: true,
+                                        });
+                                      }}
                                       className="d-flex justify-content-center"
                                     >
-                                      <i className="tim-icons icon-pencil" />
+                                      <i className="tim-icons icon-pencil hoverable" />
                                     </Col>
                                   </Row>
                                 </td>

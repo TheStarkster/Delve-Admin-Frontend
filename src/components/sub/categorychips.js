@@ -14,6 +14,20 @@ class CategoryChips extends Component {
       chips: tempChips,
     });
   };
+  addChipByremoving = (val) => {
+    this.setState(
+      {
+        chips: [],
+      },
+      () => {
+        var tempChips = this.state.chips;
+        tempChips.push(val);
+        this.setState({
+          chips: tempChips,
+        });
+      }
+    );
+  }
   removeAllChips = () => {
     this.setState({
       chips: [],

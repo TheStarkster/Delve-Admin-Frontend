@@ -37,7 +37,7 @@ class Autocomplete extends Component {
   };
   removeId = (id) => {
     var idArr = document.getElementById(this.props.id).value.split(",");
-    const index = idArr.indexOf(id);
+    const index = idArr.indexOf(id.toString());
     if (index > -1) {
       idArr.splice(index, 1);
     }
@@ -54,7 +54,6 @@ class Autocomplete extends Component {
     if (idArr.includes(e.target.id)) {
       alert("Already Added this Catagory");
     } else {
-      console.log(e.target.id);
       idArr.push(e.target.id);
       document.getElementById(this.props.id).value = idArr.join();
       this.props.categoryChipHit({
@@ -69,6 +68,19 @@ class Autocomplete extends Component {
       userInput: "",
     });
   };
+  addItemToUpdate = (data) => {
+    document.getElementById(this.props.id).value = data.id;
+    this.props.ChipHitAfterRemoving({
+      name: data.name,
+      id: data.id,
+    });
+    this.setState({
+      activeSuggestion: 0,
+      filteredSuggestions: [],
+      showSuggestions: false,
+      userInput: "",
+    });
+  }
   onKeyDown = (e) => {
     const { activeSuggestion, filteredSuggestions } = this.state;
     if (e.keyCode === 13) {
@@ -106,7 +118,6 @@ class Autocomplete extends Component {
     } = this;
 
     let suggestionsListComponent;
-
     if (showSuggestions && userInput) {
       if (filteredSuggestions.length) {
         var fieldLength = document.getElementById("txtcategory").clientWidth;
@@ -118,7 +129,6 @@ class Autocomplete extends Component {
                 if (index === activeSuggestion) {
                   className = "suggestion-active";
                 }
-                console.log(suggestion);
                 return (
                   <li
                     className={className}
