@@ -10,6 +10,7 @@ export default class Transfers extends Component {
     constructor(props){
         super(props);
         this.state = {
+          id:"",
           name: "",
           origin: "",
           destination: "",
@@ -28,6 +29,7 @@ export default class Transfers extends Component {
     }
     setData = (data) => {
       this.setState({
+        id:data.id,
         name: data.name,
         origin: data.origin,
         destination: data.destination,

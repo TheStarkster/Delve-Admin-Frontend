@@ -85,10 +85,11 @@ class ManageEvents extends React.Component {
       dTicketFileName: "Choose Ticket File",
       updatingAgenda: false,
       updatingAttendee: false,
+      updatingAgendaObject: null,
       updatingRepresentatives: false,
       updatingRepresentativesNameId: null,
       updatingRepresentativesCategoryId: null,
-      updatingAttendeeId: null,
+      updatingAttendeePhone: null,
     };
   }
   createNewTransfer = (data) => {
@@ -107,7 +108,6 @@ class ManageEvents extends React.Component {
       transfers: tempTansfers,
       rIsFilled: data ? !!this.state.rIsFilled : !this.state.rIsFilled,
     });
-    console.log(this.state.transfers);
   };
   haveAnythingEmpty = (formData) => {
     for (var key in formData) {
@@ -247,7 +247,6 @@ class ManageEvents extends React.Component {
       //this is an update condition...
       Axios.put("/events/update/" + this.state.eventId, eventFormData).then(
         (u) => {
-          console.log(u.data);
         }
       );
     } else {
@@ -934,7 +933,6 @@ class ManageEvents extends React.Component {
                               )[0]
                             );
                             if (index > -1) {
-                              console.log(index);
                               distinct.splice(
                                 index,
                                 1
@@ -1169,7 +1167,7 @@ class ManageEvents extends React.Component {
                                   aTicketFileName: "Choose Ticket File",
                                   dTicketFileName: "Choose Ticket File",
                                   updatingAttendee: false,
-                                  updatingAttendeeId:null,
+                                  updatingAttendeePhone:null,
                                 });
                               }}
                             >
@@ -1263,26 +1261,16 @@ class ManageEvents extends React.Component {
                                   fileReadertwo.readAsDataURL(fileToLoadSecond);
                                 }
                                 var Ea = this.state.EventAttendies;
-                                if(this.state.updatingAttendeeId){
-                                  var index = Ea.indexOf(Ea.filter(a => a.id == this.state.updatingAttendeeId)[0])
-                                  console.log(index)
-                                  console.log(
-                                    Ea.filter(
-                                      (a) =>
-                                        a.id == this.state.updatingAttendeeId
-                                    )[0]
-                                  );
+                                if(this.state.updatingAttendeePhone){
+                                  var index = Ea.indexOf(Ea.filter(a => a.phone == this.state.updatingAttendeePhone)[0])
                                   if(index > -1) {
                                     Ea.splice(index,1)
                                   }
-                                  console.log(Ea)
                                   var obj = {
                                     ...newAttendieObj,
                                     id: this.state.updatingAttendeeId,
                                   };
-                                  console.log(obj)
                                   Ea.push(obj)
-                                  console.log(Ea)
                                 }else 
                               {
                                 Ea.push(newAttendieObj);
@@ -1295,7 +1283,7 @@ class ManageEvents extends React.Component {
                                   aTicketFileName: "Choose Ticket File",
                                   dTicketFileName: "Choose Ticket File",
                                   updatingAttendee: false,
-                                  updatingAttendeeId:null
+                                  updatingAttendeePhone: null,
                                 });
                                   document.getElementById(
                                     "AttendiesName"
@@ -1382,7 +1370,7 @@ class ManageEvents extends React.Component {
                                       className="d-flex justify-content-center"
                                       onClick={() => {
                                         this.setState({
-                                          updatingAttendeeId:element.id
+                                          updatingAttendeePhone:element.phone
                                         })
                                         document.getElementById(
                                           "AttendiesName"
@@ -1626,6 +1614,7 @@ class ManageEvents extends React.Component {
                               this.agendaRef.current.resetState();
                               this.setState({
                                 updatingAgenda: false,
+                                updatingAgendaObject: null,
                               });
                             }}
                           >
@@ -1636,15 +1625,23 @@ class ManageEvents extends React.Component {
                             className="md-auto"
                             onClick={() => {
                               var data = this.state.agendas;
-                              data.push(this.agendaRef.current.returnState());
-                              this.setState(
-                                {
-                                  agendas: data,
-                                },
-                                () => {
-                                  this.agendaRef.current.resetState();
+                              if (this.state.updatingAgendaObject){
+                                var index = data.indexOf(this.state.updatingAgendaObject)
+                                console.log(index)
+                                if(index > -1){
+                                  data.splice(index, 1)
                                 }
-                              );
+                              }
+                              data.push(this.agendaRef.current.returnState());
+                                this.setState(
+                                  {
+                                    agendas: data,
+                                    updatingAgendaObject: null
+                                  },
+                                  () => {
+                                    this.agendaRef.current.resetState();
+                                  }
+                                );
                             }}
                           >
                             Add
@@ -1721,6 +1718,8 @@ class ManageEvents extends React.Component {
                                         this.agendaRef.current.setData(element);
                                         this.setState({
                                           updatingAgenda: true,
+                                          updatingAgendaObject:
+                                            element,
                                         });
                                       }}
                                       className="d-flex justify-content-center"

@@ -10,6 +10,7 @@ export default class Agendas extends Component {
     constructor(props){
         super(props);
         this.state = {
+          id:"",
           name: "",
           venue: "",
           startTime: "",
@@ -29,10 +30,12 @@ export default class Agendas extends Component {
         endTime: "",
         remarks: "",
         startDate: "",
+        id:"",
       });
     }
     setData = (data) => {
       this.setState({
+        id:data.id,
         name: data.name,
         venue: data.venue,
         startTime: new Date(data.startTime).toISOString().split("Z")[0],
