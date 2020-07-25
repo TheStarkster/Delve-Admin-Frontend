@@ -224,6 +224,40 @@ class ManageEvents extends React.Component {
   categoryIdfromHiddenField_CategoryName = (val) => {
     this.RepresentativeCategoryAutocompleteRef.current.removeId(val);
   };
+  modifyDataWithEventId = (EventId) => {
+    //represntatives...
+    var representativeTemp = this.state.representativeArr;
+    var newRepresentativeArr = representativeTemp.map((obj) => ({
+      ...obj,
+      EventId: EventId,
+    }));
+    //event attendies...
+    var EventAttendiesTemp = this.state.EventAttendies;
+    var newAttendiesObj = EventAttendiesTemp.map((obj) => ({
+      ...obj,
+      EventId: EventId,
+    }));
+    //event transfers...
+    var transfersTemp = this.state.transfers.map((a) => a.data);
+    var newTransferObj = transfersTemp.map((obj) => ({
+      ...obj,
+      EventId: EventId,
+    }));
+
+    //event agendas...
+    var eventAgendasTemp = this.state.agendas;
+    var newAgendasObj = eventAgendasTemp.map((obj) => ({
+      ...obj,
+      EventId: EventId,
+    }));
+
+    return {
+      Representatives: newRepresentativeArr,
+      Attendies: newAttendiesObj,
+      Transfers:newTransferObj,
+      Agendas:newAgendasObj
+    };
+  };
   submitEvent = (e) => {
     e.preventDefault();
     var eventFormData = new FormData();
@@ -245,47 +279,25 @@ class ManageEvents extends React.Component {
 
     if (this.state.eventId) {
       //this is an update condition...
-      Axios.put("/events/update/" + this.state.eventId, eventFormData).then(
-        (u) => {
-        }
-      );
+      var EventId = this.state.eventId;
+      console.log(this.modifyDataWithEventId(EventId));
+      // Axios.put(
+      //   "/events/update/" + this.state.eventId,
+      //   eventFormData
+      // ).then((u) => {});
     } else {
-      Axios.post("/events/create", eventFormData).then((u) => {
-        if (u.data.status == "success") {
-          var EventId = u.data.EventId;
-          //represntatives...
-          var representativeTemp = this.state.representativeArr;
-          var newRepresentativeArr = representativeTemp.map((obj) => ({
-            ...obj,
-            EventId: EventId,
-          }));
-          //event attendies...
-          var EventAttendiesTemp = this.state.EventAttendies;
-          var newAttendiesObj = EventAttendiesTemp.map((obj) => ({
-            ...obj,
-            EventId: EventId,
-          }));
-          //event transfers...
-          var transfersTemp = this.state.transfers.map((a) => a.data);
-          var newTransferObj = transfersTemp.map((obj) => ({
-            ...obj,
-            EventId: EventId,
-          }));
-
-          //event agendas...
-          var eventAgendasTemp = this.state.agendas;
-          var newAgendasObj = eventAgendasTemp.map((obj) => ({
-            ...obj,
-            EventId: EventId,
-          }));
-          Axios.post("/events/upload", {
-            transfersData: newTransferObj,
-            attendeesData: newAttendiesObj,
-            agendasData: newAgendasObj,
-            representatives: newRepresentativeArr,
-          }).then((u) => {});
-        }
-      });
+      // Axios.post("/events/create", eventFormData).then((u) => {
+      //   if (u.data.status == "success") {
+      //     var EventId = u.data.EventId;
+      //     this.modifyDataWithEventId(EventId);
+      //     Axios.post("/events/upload", {
+      //       transfersData: newTransferObj,
+      //       attendeesData: newAttendiesObj,
+      //       agendasData: newAgendasObj,
+      //       representatives: newRepresentativeArr,
+      //     }).then((u) => {});
+      //   }
+      // });
     }
   };
   setCountryId = (id) => {
@@ -815,8 +827,10 @@ class ManageEvents extends React.Component {
                                     onClick={() => {
                                       this.setState({
                                         updatingRepresentatives: true,
-                                        updatingRepresentativesNameId:a.EmployeeId,
-                                        updatingRepresentativesCategoryId:a.RepresentativeCategoryId
+                                        updatingRepresentativesNameId:
+                                          a.EmployeeId,
+                                        updatingRepresentativesCategoryId:
+                                          a.RepresentativeCategoryId,
                                       });
                                       this.RepresentativeNameAutocompleteRef.current.addItemToUpdate(
                                         { id: a.EmployeeId, name: a.Name }
@@ -916,7 +930,7 @@ class ManageEvents extends React.Component {
                                   EmployeeId: newArr[i].EmployeeId,
                                   RepresentativeCategoryId:
                                     newArr[i].RepresentativeCategoryId,
-                                  id:newArr[i].id
+                                  id: newArr[i].id,
                                 });
                                 unique[
                                   newArr[i].EmployeeId +
@@ -928,21 +942,21 @@ class ManageEvents extends React.Component {
                             var index = distinct.indexOf(
                               distinct.filter(
                                 (a) =>
-                                  a.EmployeeId == this.state.updatingRepresentativesNameId &&
-                                  a.RepresentativeCategoryId == this.state.updatingRepresentativesCategoryId
+                                  a.EmployeeId ==
+                                    this.state.updatingRepresentativesNameId &&
+                                  a.RepresentativeCategoryId ==
+                                    this.state.updatingRepresentativesCategoryId
                               )[0]
                             );
                             if (index > -1) {
-                              distinct.splice(
-                                index,
-                                1
-                              );
+                              distinct.splice(index, 1);
                             }
                             this.setState({
                               representativeArr: distinct,
-                              updatingRepresentativesNameId:null,
-                              updatingRepresentativesCategoryId:null,
-                              updatingRepresentatives:!this.state.updatingRepresentatives
+                              updatingRepresentativesNameId: null,
+                              updatingRepresentativesCategoryId: null,
+                              updatingRepresentatives: !this.state
+                                .updatingRepresentatives,
                             });
                             this.representativeNameRef.current.removeAllChips();
                             this.representativeCategoryRef.current.removeAllChips();
@@ -1167,7 +1181,7 @@ class ManageEvents extends React.Component {
                                   aTicketFileName: "Choose Ticket File",
                                   dTicketFileName: "Choose Ticket File",
                                   updatingAttendee: false,
-                                  updatingAttendeePhone:null,
+                                  updatingAttendeePhone: null,
                                 });
                               }}
                             >
@@ -1219,8 +1233,12 @@ class ManageEvents extends React.Component {
                                   .TicketsSame
                                   ? true
                                   : false;
-                                newAttendieObj["aticket"] = this.state.aTicketFileName;
-                                newAttendieObj["dticket"] = this.state.dTicketFileName
+                                newAttendieObj[
+                                  "aticket"
+                                ] = this.state.aTicketFileName;
+                                newAttendieObj[
+                                  "dticket"
+                                ] = this.state.dTicketFileName;
                                 //converting files to base64...
                                 let fileToLoad = document.getElementById(
                                   "ticket-file-from"
@@ -1261,21 +1279,25 @@ class ManageEvents extends React.Component {
                                   fileReadertwo.readAsDataURL(fileToLoadSecond);
                                 }
                                 var Ea = this.state.EventAttendies;
-                                if(this.state.updatingAttendeePhone){
-                                  var index = Ea.indexOf(Ea.filter(a => a.phone == this.state.updatingAttendeePhone)[0])
-                                  if(index > -1) {
-                                    Ea.splice(index,1)
+                                if (this.state.updatingAttendeePhone) {
+                                  var index = Ea.indexOf(
+                                    Ea.filter(
+                                      (a) =>
+                                        a.phone ==
+                                        this.state.updatingAttendeePhone
+                                    )[0]
+                                  );
+                                  if (index > -1) {
+                                    Ea.splice(index, 1);
                                   }
                                   var obj = {
                                     ...newAttendieObj,
                                     id: this.state.updatingAttendeeId,
                                   };
-                                  Ea.push(obj)
-                                }else 
-                              {
-                                Ea.push(newAttendieObj);
-
-                              }
+                                  Ea.push(obj);
+                                } else {
+                                  Ea.push(newAttendieObj);
+                                }
                                 this.setState({
                                   EventAttendies: Ea,
                                   addedAttendie: !this.state.addedAttendie,
@@ -1285,33 +1307,30 @@ class ManageEvents extends React.Component {
                                   updatingAttendee: false,
                                   updatingAttendeePhone: null,
                                 });
-                                  document.getElementById(
-                                    "AttendiesName"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "AttendiesPhone"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "AttendiesEmail"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "AttendiesLocation"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "Arr_ticketFrom"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "Arr_ticketTo"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "Dep_ticketFrom"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "Dep_ticketTo"
-                                  ).value = "";
-                                  document.getElementById(
-                                    "SameTicketChkId"
-                                  ).checked = false;
+                                document.getElementById("AttendiesName").value =
+                                  "";
+                                document.getElementById(
+                                  "AttendiesPhone"
+                                ).value = "";
+                                document.getElementById(
+                                  "AttendiesEmail"
+                                ).value = "";
+                                document.getElementById(
+                                  "AttendiesLocation"
+                                ).value = "";
+                                document.getElementById(
+                                  "Arr_ticketFrom"
+                                ).value = "";
+                                document.getElementById("Arr_ticketTo").value =
+                                  "";
+                                document.getElementById(
+                                  "Dep_ticketFrom"
+                                ).value = "";
+                                document.getElementById("Dep_ticketTo").value =
+                                  "";
+                                document.getElementById(
+                                  "SameTicketChkId"
+                                ).checked = false;
                               }}
                             >
                               Add
@@ -1370,8 +1389,8 @@ class ManageEvents extends React.Component {
                                       className="d-flex justify-content-center"
                                       onClick={() => {
                                         this.setState({
-                                          updatingAttendeePhone:element.phone
-                                        })
+                                          updatingAttendeePhone: element.phone,
+                                        });
                                         document.getElementById(
                                           "AttendiesName"
                                         ).value = element["name"];
@@ -1625,23 +1644,25 @@ class ManageEvents extends React.Component {
                             className="md-auto"
                             onClick={() => {
                               var data = this.state.agendas;
-                              if (this.state.updatingAgendaObject){
-                                var index = data.indexOf(this.state.updatingAgendaObject)
-                                console.log(index)
-                                if(index > -1){
-                                  data.splice(index, 1)
+                              if (this.state.updatingAgendaObject) {
+                                var index = data.indexOf(
+                                  this.state.updatingAgendaObject
+                                );
+                                console.log(index);
+                                if (index > -1) {
+                                  data.splice(index, 1);
                                 }
                               }
                               data.push(this.agendaRef.current.returnState());
-                                this.setState(
-                                  {
-                                    agendas: data,
-                                    updatingAgendaObject: null
-                                  },
-                                  () => {
-                                    this.agendaRef.current.resetState();
-                                  }
-                                );
+                              this.setState(
+                                {
+                                  agendas: data,
+                                  updatingAgendaObject: null,
+                                },
+                                () => {
+                                  this.agendaRef.current.resetState();
+                                }
+                              );
                             }}
                           >
                             Add
@@ -1718,8 +1739,7 @@ class ManageEvents extends React.Component {
                                         this.agendaRef.current.setData(element);
                                         this.setState({
                                           updatingAgenda: true,
-                                          updatingAgendaObject:
-                                            element,
+                                          updatingAgendaObject: element,
                                         });
                                       }}
                                       className="d-flex justify-content-center"

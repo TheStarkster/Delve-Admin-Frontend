@@ -10,7 +10,7 @@ export default class Transfers extends Component {
     constructor(props){
         super(props);
         this.state = {
-          id:"",
+          id: undefined,
           name: "",
           origin: "",
           destination: "",
