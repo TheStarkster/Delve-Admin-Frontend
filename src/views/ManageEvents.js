@@ -142,7 +142,12 @@ class ManageEvents extends React.Component {
         a = { ...a, endTime: new Date(a.startDate + "T" + a.endTime) };
         return a;
       }),
-      EventAttendies: data.Attendees,
+      EventAttendies: data.Attendees.map((a) => {
+        return {
+          ...a,
+          isSameAsArriving: a.dticket == null,
+        };
+      }),
       representativeArr: data.Representatives_for_Events.map((a) => {
         var obj = {};
         obj["Name"] = a.Employees.name;
@@ -254,8 +259,8 @@ class ManageEvents extends React.Component {
     return {
       Representatives: newRepresentativeArr,
       Attendies: newAttendiesObj,
-      Transfers:newTransferObj,
-      Agendas:newAgendasObj
+      Transfers: newTransferObj,
+      Agendas: newAgendasObj,
     };
   };
   submitEvent = (e) => {
@@ -280,11 +285,20 @@ class ManageEvents extends React.Component {
     if (this.state.eventId) {
       //this is an update condition...
       var EventId = this.state.eventId;
-      console.log(this.modifyDataWithEventId(EventId));
-      // Axios.put(
-      //   "/events/update/" + this.state.eventId,
-      //   eventFormData
-      // ).then((u) => {});
+      Axios.put("/events/update/" + this.state.eventId, eventFormData).then(
+        (u) => {
+          var data = this.modifyDataWithEventId(EventId);
+          Axios.post("/events/upload-updated", {
+            // representatives: data.Representatives,
+            // transfersData: data.Transfers,
+            attendeesData: data.Attendies,
+            // agendasData: data.Agendas,
+            EventId: EventId,
+          }).then((a) => {
+            console.log(a);
+          });
+        }
+      );
     } else {
       // Axios.post("/events/create", eventFormData).then((u) => {
       //   if (u.data.status == "success") {
@@ -939,6 +953,7 @@ class ManageEvents extends React.Component {
                                 ] = 1;
                               }
                             }
+                            console.log(distinct);
                             var index = distinct.indexOf(
                               distinct.filter(
                                 (a) =>
@@ -1290,14 +1305,13 @@ class ManageEvents extends React.Component {
                                   if (index > -1) {
                                     Ea.splice(index, 1);
                                   }
-                                  var obj = {
-                                    ...newAttendieObj,
-                                    id: this.state.updatingAttendeeId,
-                                  };
-                                  Ea.push(obj);
+                                  newAttendieObj.id = this.state.updatingAttendeeId
+                                  Ea.push(newAttendieObj);
+                                  console.log(Ea);
                                 } else {
                                   Ea.push(newAttendieObj);
                                 }
+                                //reseting the state...
                                 this.setState({
                                   EventAttendies: Ea,
                                   addedAttendie: !this.state.addedAttendie,
