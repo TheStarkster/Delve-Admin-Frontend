@@ -69,6 +69,7 @@ export default class Agendas extends Component {
                     type="datetime-local"
                     value={this.state.startTime}
                     onChange={(e) => {
+                      console.log(e.target.value)
                       this.setState({
                         startTime: e.target.value,
                         startDate: e.target.value,

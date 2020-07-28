@@ -300,18 +300,19 @@ class ManageEvents extends React.Component {
         }
       );
     } else {
-      // Axios.post("/events/create", eventFormData).then((u) => {
-      //   if (u.data.status == "success") {
-      //     var EventId = u.data.EventId;
-      //     this.modifyDataWithEventId(EventId);
-      //     Axios.post("/events/upload", {
-      //       transfersData: newTransferObj,
-      //       attendeesData: newAttendiesObj,
-      //       agendasData: newAgendasObj,
-      //       representatives: newRepresentativeArr,
-      //     }).then((u) => {});
-      //   }
-      // });
+      Axios.post("/events/create", eventFormData).then((u) => {
+        if (u.data.status == "success") {
+          var EventId = u.data.EventId;
+          var data = this.modifyDataWithEventId(EventId);
+          Axios.post("/events/upload", {
+            representatives: data.Representatives,
+            transfersData: data.Transfers,
+            attendeesData: data.Attendies,
+            agendasData: data.Agendas,
+            EventId: EventId,
+          }).then((u) => {});
+        }
+      });
     }
   };
   setCountryId = (id) => {
