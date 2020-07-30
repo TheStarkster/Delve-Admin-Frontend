@@ -19,7 +19,6 @@
     "react-chartjs-2": "2.9.0",
     "react-data-table-component": "^6.9.6",
     "react-dom": "16.13.0",
-    "react-google-maps": "9.4.5",
     "react-notification-alert": "0.0.12",
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.0",
@@ -45,13 +44,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-
-  "devDependencies": {
-    "@editorjs/editorjs": "^2.18.0",
-    "@editorjs/header": "^2.5.0",
-    "@editorjs/paragraph": "^2.7.0",
-    "@natterstefan/react-editor-js": "^0.3.1",
-    "react": "^16.13.0"
-  }
+  ]
 }
