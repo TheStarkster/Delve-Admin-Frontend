@@ -136,3 +136,6 @@ a {
 .hoverable-danger:hover{
   background-color: rgba(231, 23, 23, 0.623);
 }
+.card p {
+  color: black !important;
+}

@@ -33,6 +33,7 @@ const s50 = {
 class ManageEvents extends React.Component {
   constructor(props) {
     super(props);
+    this.EditorRef = createRef();
     this.EventAttendies = createRef();
     this.agendaRef = createRef();
     this.countryRef = createRef();
@@ -81,6 +82,7 @@ class ManageEvents extends React.Component {
       representativeArr: [],
       RepresentativesCategory: [],
       TicketsSame: false,
+      isEditorOpen:false,
       aTicketFileName: "Choose Ticket File",
       dTicketFileName: "Choose Ticket File",
       updatingAgenda: false,
@@ -271,6 +273,7 @@ class ManageEvents extends React.Component {
     eventFormData.append("liveTo", this.state.eventFrom);
     eventFormData.append("CustomerId", this.state.eventBy);
     eventFormData.append("PlackCardImage", this.state.eventPlackCardImage);
+    eventFormData.append("desc", this.state.welcomeNote);
     eventFormData.append(
       "PlackCardImageName",
       this.state.eventPlackCardImageName
@@ -289,10 +292,10 @@ class ManageEvents extends React.Component {
         (u) => {
           var data = this.modifyDataWithEventId(EventId);
           Axios.post("/events/upload-updated", {
-            // representatives: data.Representatives,
-            // transfersData: data.Transfers,
+            representatives: data.Representatives,
+            transfersData: data.Transfers,
             attendeesData: data.Attendies,
-            // agendasData: data.Agendas,
+            agendasData: data.Agendas,
             EventId: EventId,
           }).then((a) => {
             console.log(a);
@@ -501,7 +504,30 @@ class ManageEvents extends React.Component {
                       </Col>
                       <Col md="12">
                         <label>Welcome Note</label>
-                        {/* <Editor /> */}
+                        <Row>
+                          <Col md="12">
+                            <Button
+                              color={this.state.isEditorOpen ? "danger" : ""}
+                              onClick={() => {
+                                if(this.state.isEditorOpen){
+                                  this.setState({
+                                    welcomeNote: this.EditorRef.current.returnContent(),
+                                  });
+                                }
+                                this.setState({
+                                  isEditorOpen: !this.state.isEditorOpen,
+                                });
+                              }}
+                            >
+                              {this.state.isEditorOpen
+                                ? "Save & Close Editor"
+                                : "Open Editor"}
+                            </Button>
+                          </Col>
+                        </Row>
+                        {this.state.isEditorOpen ? (
+                          <Editor ref={this.EditorRef} />
+                        ) : null}
                       </Col>
                     </Row>
                   </Form>
@@ -710,7 +736,15 @@ class ManageEvents extends React.Component {
                                     }
                                   ).then((u) => {
                                     if (u.data.message == "success") {
+                                      var temp = this.state
+                                        .RepresentativesCategory;
+                                      temp.push({
+                                        Name: this.state
+                                          .representativeCategoryName,
+                                        id: u.data.data,
+                                      });
                                       this.setState({
+                                        RepresentativesCategory: temp,
                                         createdNewRepresentativeCategory: !this
                                           .state
                                           .createdNewRepresentativeCategory,
@@ -1306,7 +1340,7 @@ class ManageEvents extends React.Component {
                                   if (index > -1) {
                                     Ea.splice(index, 1);
                                   }
-                                  newAttendieObj.id = this.state.updatingAttendeeId
+                                  newAttendieObj.id = this.state.updatingAttendeeId;
                                   Ea.push(newAttendieObj);
                                   console.log(Ea);
                                 } else {
