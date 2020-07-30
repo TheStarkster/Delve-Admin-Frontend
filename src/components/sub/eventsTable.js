@@ -63,6 +63,9 @@ const EventTable = forwardRef((props, ref) => {
     })
     
   };
+  const handleDownloadAction = (value) => {
+    window.open("http://localhost:5000/v1/events/download-id-proofs/" + value.id, "_blank");
+  };
   const columns = useMemo(() => [
     {
       name: "Name",
@@ -83,6 +86,22 @@ const EventTable = forwardRef((props, ref) => {
     {
       name: "Ends On",
       selector: "liveTo",
+    },
+    {
+      cell: (row) => (
+        <Button
+          style={{ padding: "15px" }}
+          className="btn btn-primary"
+          onClick={() => handleDownloadAction(row)}
+        >
+          <i className="tim-icons icon-cloud-download-93" />
+        </Button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      name: "Download",
+      selector: "Download",
     },
     {
       cell: (row) => (
