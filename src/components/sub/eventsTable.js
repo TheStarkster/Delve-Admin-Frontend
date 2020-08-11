@@ -64,7 +64,7 @@ const EventTable = forwardRef((props, ref) => {
     
   };
   const handleDownloadAction = (value) => {
-    window.open("http://localhost:5000/v1/events/download-id-proofs/" + value.id, "_blank");
+    window.open("http://162.241.71.139:5000/v1/events/download-id-proofs/" + value.id, "_blank");
   };
   const columns = useMemo(() => [
     {
