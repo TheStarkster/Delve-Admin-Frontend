@@ -3,6 +3,7 @@ import UserProfile from "views/UserProfile.js";
 import ManageEvents from "views/ManageEvents.js";
 import CitiesCountries from "views/cities&countries.js";
 import Customers from "views/customers.js";
+import AboutCompany from "views/AboutCompany";
 
 var routes = [
   {
@@ -28,6 +29,14 @@ var routes = [
     icon: "tim-icons icon-book-bookmark",
     component: CitiesCountries,
     layout: "/admin",
+  },
+  {
+    path: "/About-Company",
+    name: "About Company",
+    rtlName: "إخطارات",
+    component: AboutCompany,
+    layout: "/admin",
+    icon: "tim-icons icon-single-copy-04"
   },
   {
     path: "/user-profile",

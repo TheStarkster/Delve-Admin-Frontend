@@ -126,7 +126,7 @@ class Dashboard extends React.Component {
                             type="radio"
                           />
                           <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
-                            Expired
+                            Past
                           </span>
                           <span className="d-block d-sm-none">
                             <i className="tim-icons icon-single-02" />
