@@ -4,6 +4,7 @@ import ManageEvents from "views/ManageEvents.js";
 import CitiesCountries from "views/cities&countries.js";
 import Customers from "views/customers.js";
 import AboutCompany from "views/AboutCompany";
+import EventGallery from "views/EventGallery";
 
 var routes = [
   {
@@ -36,7 +37,15 @@ var routes = [
     rtlName: "إخطارات",
     component: AboutCompany,
     layout: "/admin",
-    icon: "tim-icons icon-single-copy-04"
+    icon: "tim-icons icon-single-copy-04",
+  },
+  {
+    icon: "tim-icons icon-camera-18",
+    path: "/event-gallery",
+    name: "Event Gallery",
+    rtlName: "ملف تعريفي للمستخدم",
+    component: EventGallery,
+    layout: "/admin",
   },
   {
     path: "/user-profile",

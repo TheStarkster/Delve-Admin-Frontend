@@ -53,6 +53,12 @@ const EventTable = forwardRef((props, ref) => {
       }
     });
   };
+  const handleGalleryAction = (value) => {
+    return props.history.push({
+      pathname: "/admin/event-gallery",
+      state: { eventId: value.id },
+    });
+  };
   const handleEditAction = (value) => {
     setOverlayLoader(true);
     Axios.get("/events/read-for-admin/"+value.id)
@@ -67,6 +73,10 @@ const EventTable = forwardRef((props, ref) => {
     window.open("http://162.241.71.139:5000/v1/events/download-id-proofs/" + value.id, "_blank");
   };
   const columns = useMemo(() => [
+    {
+      name: "Event Id",
+      selector: "id",
+    },
     {
       name: "Name",
       selector: "name",
@@ -102,6 +112,22 @@ const EventTable = forwardRef((props, ref) => {
       button: true,
       name: "Download",
       selector: "Download",
+    },
+    {
+      cell: (row) => (
+        <Button
+          style={{ padding: "15px" }}
+          className="btn btn-success"
+          onClick={() => handleGalleryAction(row)}
+        >
+          <i className="tim-icons icon-camera-18" />
+        </Button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      name: "Gallery",
+      selector: "gallery",
     },
     {
       cell: (row) => (
