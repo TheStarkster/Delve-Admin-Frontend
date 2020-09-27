@@ -48,21 +48,45 @@ const QueryTable = (props) => {
   const [openedQueryId, setOpenQueryId] = useState("");
 
   useEffect(() => {
-    Axios.get("query/get-latest").then((u) => {
-      const modifiedData = u.data.map((row) => {
-        return {
-          ...row,
-          attendeeName: row.Attendee.name,
-          attendeePhone: row.Attendee.phone,
-          attendeeEmail: row.Attendee.email,
-          //TODO: implement event name in queries table
-          // EventName: row.Event.name,
-        };
+    console.log(props.inAll);
+    if (!props.inAll) {
+      Axios.get("query/get-latest").then((u) => {
+        const modifiedData = u.data.map((row) => {
+          return {
+            ...row,
+            attendeeName: row.Attendee.name,
+            attendeePhone: row.Attendee.phone,
+            attendeeEmail: row.Attendee.email,
+            //TODO: implement event name in queries table
+            // EventName: row.Event.name,
+          };
+        });
+        setData(modifiedData);
+        setProgress(false);
       });
-      setData(modifiedData);
-      setProgress(false);
-    });
-  }, []);
+    } else {
+      if (props.eventId) {
+        Axios.get(`query/get-all/${props.eventId}`).then((u) => {
+          const modifiedData = u.data.map((row) => {
+            return {
+              ...row,
+              attendeeName: row.Attendee.name,
+              attendeePhone: row.Attendee.phone,
+              attendeeEmail: row.Attendee.email,
+              //TODO: implement event name in queries table
+              // EventName: row.Event.name,
+            };
+          });
+          setData(modifiedData);
+          setProgress(false);
+          props.searched();
+        });
+      } else {
+        setData([]);
+        setProgress(false);
+      }
+    }
+  }, [props.eventId]);
 
   createTheme("solarized", {
     text: {
@@ -109,22 +133,24 @@ const QueryTable = (props) => {
       answer: answer,
       id: openedQueryId,
     }).then((u) => {
-      Axios.get("query/get-latest").then((u) => {
-        const modifiedData = u.data.map((row) => {
-          return {
-            ...row,
-            attendeeName: row.Attendee.name,
-            attendeePhone: row.Attendee.phone,
-            attendeeEmail: row.Attendee.email,
-            //TODO: implement event name in queries table
-            // EventName: row.Event.name,
-          };
+      if (props.eventId == null) {
+        Axios.get("query/get-latest").then((u) => {
+          const modifiedData = u.data.map((row) => {
+            return {
+              ...row,
+              attendeeName: row.Attendee.name,
+              attendeePhone: row.Attendee.phone,
+              attendeeEmail: row.Attendee.email,
+              //TODO: implement event name in queries table
+              // EventName: row.Event.name,
+            };
+          });
+          setData(modifiedData);
+          setProgress(false);
+          setIsSaving(false);
+          setShowModal(false);
         });
-        setData(modifiedData);
-        setProgress(false);
-        setIsSaving(false);
-        setShowModal(false);
-      });
+      }
     });
   };
   const columns = useMemo(() => [

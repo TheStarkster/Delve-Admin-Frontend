@@ -20,7 +20,7 @@ import {
   Table,
 } from "reactstrap";
 import Transfers from "components/sub/transfers";
-import dist from "react-notification-alert";
+
 const s26 = {
   width: "100%",
 };
@@ -82,7 +82,7 @@ class ManageEvents extends React.Component {
       representativeArr: [],
       RepresentativesCategory: [],
       TicketsSame: false,
-      isEditorOpen:false,
+      isEditorOpen: false,
       aTicketFileName: "Choose Ticket File",
       dTicketFileName: "Choose Ticket File",
       updatingAgenda: false,
@@ -509,7 +509,7 @@ class ManageEvents extends React.Component {
                             <Button
                               color={this.state.isEditorOpen ? "danger" : ""}
                               onClick={() => {
-                                if(this.state.isEditorOpen){
+                                if (this.state.isEditorOpen) {
                                   this.setState({
                                     welcomeNote: this.EditorRef.current.returnContent(),
                                   });

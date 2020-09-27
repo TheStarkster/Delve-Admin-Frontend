@@ -165,7 +165,7 @@ export default class AboutCompany extends Component {
     });
   };
   render() {
-    var galleryImages = this.state.images == null ? [] :  [...this.state.images];
+    var galleryImages = this.state.images == null ? [] : [...this.state.images];
     const config = {
       readonly: false,
     };
@@ -224,7 +224,7 @@ export default class AboutCompany extends Component {
                         }}
                       />
                       <Button
-                        color="danger"
+                        color="success"
                         disabled={this.state.updatingDesc}
                         onClick={() => {
                           if (this.state.description === editedText) {
@@ -240,6 +240,16 @@ export default class AboutCompany extends Component {
                           ? "Saving Please Wait"
                           : "Save & Close Editor"}
                       </Button>
+                      <Button
+                        color="danger"
+                        onClick={() => {
+                          this.setState({
+                            isEditorOpen: !this.state.isEditorOpen,
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   ) : (
                     <div
@@ -254,6 +264,7 @@ export default class AboutCompany extends Component {
                         onClick={() => {
                           this.setState({
                             isEditorOpen: !this.state.isEditorOpen,
+                            editorText: this.state.description,
                           });
                         }}
                       >

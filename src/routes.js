@@ -5,6 +5,7 @@ import CitiesCountries from "views/cities&countries.js";
 import Customers from "views/customers.js";
 import AboutCompany from "views/AboutCompany";
 import EventGallery from "views/EventGallery";
+import Queries from "views/queries";
 
 var routes = [
   {
@@ -61,6 +62,14 @@ var routes = [
     rtlName: "ملف تعريفي للمستخدم",
     icon: "tim-icons icon-single-02",
     component: Customers,
+    layout: "/admin",
+  },
+  {
+    path: "/queries",
+    name: "Queries",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "tim-icons icon-alert-circle-exc",
+    component: Queries,
     layout: "/admin",
   },
 ];
