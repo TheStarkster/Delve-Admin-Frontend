@@ -46,9 +46,9 @@ const QueryTable = (props) => {
   const [showModal, setShowModal] = useState(false);
   const [answer, setAnswer] = useState("");
   const [openedQueryId, setOpenQueryId] = useState("");
+  const [openedQueryAttendeeId, setOpenQueryAttendeeId] = useState("");
 
   useEffect(() => {
-    console.log(props.inAll);
     if (!props.inAll) {
       Axios.get("query/get-latest").then((u) => {
         const modifiedData = u.data.map((row) => {
@@ -57,6 +57,7 @@ const QueryTable = (props) => {
             attendeeName: row.Attendee.name,
             attendeePhone: row.Attendee.phone,
             attendeeEmail: row.Attendee.email,
+            attendeeId: row.Attendee.id,
             //TODO: implement event name in queries table
             // EventName: row.Event.name,
           };
@@ -73,6 +74,7 @@ const QueryTable = (props) => {
               attendeeName: row.Attendee.name,
               attendeePhone: row.Attendee.phone,
               attendeeEmail: row.Attendee.email,
+              attendeeId: row.Attendee.id,
               //TODO: implement event name in queries table
               // EventName: row.Event.name,
             };
@@ -126,12 +128,14 @@ const QueryTable = (props) => {
   const handleResolveAction = (value) => {
     setShowModal(true);
     setOpenQueryId(value.id);
+    setOpenQueryAttendeeId(value.attendeeId);
   };
   const saveAnswer = () => {
     setIsSaving(true);
     Axios.post("query/resolve", {
       answer: answer,
       id: openedQueryId,
+      attendeeId: openedQueryAttendeeId,
     }).then((u) => {
       if (props.eventId == null) {
         Axios.get("query/get-latest").then((u) => {
@@ -141,6 +145,7 @@ const QueryTable = (props) => {
               attendeeName: row.Attendee.name,
               attendeePhone: row.Attendee.phone,
               attendeeEmail: row.Attendee.email,
+              attendeeId: row.Attendee.id,
               //TODO: implement event name in queries table
               // EventName: row.Event.name,
             };
@@ -257,6 +262,7 @@ const QueryTable = (props) => {
                     setIsSaving(false);
                     setShowModal(false);
                     setOpenQueryId("");
+                    setOpenQueryAttendeeId("");
                     setAnswer("");
                   }}
                 >
