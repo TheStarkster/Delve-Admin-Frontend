@@ -1,7 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import QueryCard from "../components/sub/querycard";
-import Axios from '../components/sub/axios'
+import Axios from "../components/sub/axios";
 import {
   Button,
   ButtonGroup,
@@ -11,9 +10,9 @@ import {
   CardTitle,
   Row,
   Col,
-  Table,
 } from "reactstrap";
 import EventTable from "components/sub/eventsTable";
+import QueryTable from "../components/sub/queryTable";
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -79,7 +78,7 @@ class Dashboard extends React.Component {
         tableData: tableTempData,
       });
     });
-  }
+  };
   setBgChartData = (name) => {
     this.setState({
       bigChartData: name,
@@ -96,8 +95,8 @@ class Dashboard extends React.Component {
                 <CardHeader>
                   <Row>
                     <Col className="text-left" sm="6">
-                      <h5 className="card-category">Total Events</h5>
                       <CardTitle tag="h2">Events</CardTitle>
+                      <h5 className="card-category">Total Events</h5>
                     </Col>
                     <Col sm="6">
                       <ButtonGroup
@@ -201,10 +200,12 @@ class Dashboard extends React.Component {
           <Row>
             <Col xs="12">
               <Card className="card-chart">
+                <CardHeader>
+                  <CardTitle tag="h2">Event Queries</CardTitle>
+                  <h5 className="card-category">Queries Raised by Attendees</h5>
+                </CardHeader>
                 <CardBody>
-                  <QueryCard />
-                  <QueryCard />
-                  <QueryCard />
+                  <QueryTable />
                 </CardBody>
               </Card>
             </Col>

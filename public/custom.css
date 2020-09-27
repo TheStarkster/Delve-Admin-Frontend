@@ -96,46 +96,64 @@ a {
 .places-hr {
   background-color: #ffffff38;
 }
-.state-name{
+.state-name {
   padding: 8px;
   border-radius: 12px;
   background-color: rgba(0, 0, 0, 0.205);
 }
-.Country-Modal{
+.Country-Modal {
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   position: absolute;
   width: 46%;
   background-color: white;
   border-radius: 12px;
 }
-.Modal-Root{
-  position: absolute;
+.Modal-Root {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.644);
   z-index: 9999;
 }
-.ModalAnimation-enter{
+.ModalAnimation-enter {
   opacity: 0.01;
 }
-.ModalAnimation-enter.ModalAnimation-enter-active{
+.ModalAnimation-enter.ModalAnimation-enter-active {
   opacity: 1;
   transition: opacity 300ms ease-in;
 }
 
-.hoverable,.hoverable-danger{
+.hoverable,
+.hoverable-danger {
   border-radius: 12px;
   padding: 12px;
   transition: 400ms;
 }
-.hoverable:hover{
+.hoverable:hover {
   background-color: rgba(0, 0, 0, 0.623);
 }
-.hoverable-danger:hover{
+.hoverable-danger:hover {
   background-color: rgba(231, 23, 23, 0.623);
 }
 .card p {
   color: black !important;
+}
+svg {
+  color: white;
+}
+.resolve-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  width: 46%;
+  background-color: rgb(39, 41, 61);
+  height: 30%;
+  padding: 18px;
+  border-radius: 12px;
 }
