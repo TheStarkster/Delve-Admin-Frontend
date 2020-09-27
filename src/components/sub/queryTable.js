@@ -155,6 +155,24 @@ const QueryTable = (props) => {
           setIsSaving(false);
           setShowModal(false);
         });
+      } else {
+        Axios.get(`query/get-all/${props.eventId}`).then((u) => {
+          const modifiedData = u.data.map((row) => {
+            return {
+              ...row,
+              attendeeName: row.Attendee.name,
+              attendeePhone: row.Attendee.phone,
+              attendeeEmail: row.Attendee.email,
+              attendeeId: row.Attendee.id,
+              //TODO: implement event name in queries table
+              // EventName: row.Event.name,
+            };
+          });
+          setData(modifiedData);
+          setProgress(false);
+          setIsSaving(false);
+          setShowModal(false);
+        });
       }
     });
   };
