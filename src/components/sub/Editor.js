@@ -6,8 +6,8 @@ class Editor extends Component {
     content: "",
   };
   returnContent = () => {
-    return this.state.content
-  }
+    return this.state.content;
+  };
   render() {
     const config = {
       readonly: false, // all options from https://xdsoft.net/jodit/doc/

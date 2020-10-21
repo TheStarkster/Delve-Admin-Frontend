@@ -46,6 +46,7 @@ class ManageEvents extends React.Component {
     this.representativeCategoryRef = createRef();
     this.RepresentativeCategoryAutocompleteRef = createRef();
     this.state = {
+      isSaving: false,
       eventId: null,
       eventName: "",
       eventBy: null,
@@ -121,6 +122,7 @@ class ManageEvents extends React.Component {
   };
   setDataToFields = (u) => {
     var data = JSON.parse(u).data;
+    console.log(data);
     this.setState({
       eventId: data.id,
       eventName: data.name,
@@ -136,7 +138,7 @@ class ManageEvents extends React.Component {
       eventImageName: data.eventImage.split("/")[
         data.eventImage.split("/").length - 1
       ],
-      welcomeNote: data.welcomeNote,
+      welcomeNote: data.description,
       countryId: data.Locations.CountryId,
       cityId: data.Locations.CityId,
       agendas: data.Agendas.map((a) => {
@@ -160,12 +162,16 @@ class ManageEvents extends React.Component {
         return obj;
       }),
     });
+    console.log(this.state.welcomeNote);
     data.Transfers.map((elem) => {
       this.createNewTransfer(elem);
     });
     this.countryRef.current.setDataUsingId(this.state.countryId);
     this.cityRef.current.setDataUsingId(this.state.cityId);
     this.customerRef.current.setDataUsingId(this.state.customerId);
+
+    //clear out local storage...
+    localStorage.removeItem("eventDataToUpdate");
   };
   componentWillMount = () => {
     Promise.all([
@@ -267,6 +273,9 @@ class ManageEvents extends React.Component {
   };
   submitEvent = (e) => {
     e.preventDefault();
+    this.setState({
+      isSaving: !this.state.isSaving,
+    });
     var eventFormData = new FormData();
     eventFormData.append("name", this.state.eventName);
     eventFormData.append("liveFrom", this.state.eventFrom);
@@ -298,7 +307,9 @@ class ManageEvents extends React.Component {
             agendasData: data.Agendas,
             EventId: EventId,
           }).then((a) => {
-            console.log(a);
+            this.setState({
+              isSaving: !this.state.isSaving,
+            });
           });
         }
       );
@@ -313,7 +324,11 @@ class ManageEvents extends React.Component {
             attendeesData: data.Attendies,
             agendasData: data.Agendas,
             EventId: EventId,
-          }).then((u) => {});
+          }).then((u) => {
+            this.setState({
+              isSaving: !this.state.isSaving,
+            });
+          });
         }
       });
     }
@@ -435,7 +450,7 @@ class ManageEvents extends React.Component {
                         </FormGroup>
                       </Col>
                       <Col md="3">
-                        <label>Pick Plack Card Image</label>
+                        <label>Pick Pla Card Image</label>
                         <div className="custom-file mb-2">
                           <Input
                             type="file"
@@ -520,13 +535,16 @@ class ManageEvents extends React.Component {
                               }}
                             >
                               {this.state.isEditorOpen
-                                ? "Save & Close Editor"
+                                ? "Close Editor"
                                 : "Open Editor"}
                             </Button>
                           </Col>
                         </Row>
                         {this.state.isEditorOpen ? (
-                          <Editor ref={this.EditorRef} />
+                          <Editor
+                            ref={this.EditorRef}
+                            content={this.state.welcomeNote}
+                          />
                         ) : null}
                       </Col>
                     </Row>
@@ -1817,9 +1835,10 @@ class ManageEvents extends React.Component {
                   paddingRight: "38px",
                   paddingLeft: "38px",
                 }}
+                disabled={this.state.isSaving}
                 onClick={(e) => this.submitEvent(e)}
               >
-                Save Event
+                {this.state.isSaving ? "Saving..." : "Save Event"}
               </Button>
             </Col>
           </Row>

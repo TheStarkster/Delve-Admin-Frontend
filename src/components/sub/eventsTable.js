@@ -1,16 +1,16 @@
-import React, {
-  useState,
-  useMemo,
-  useEffect,
-  forwardRef,
-} from "react";
+import React, { useState, useMemo, useEffect, forwardRef } from "react";
 import DataTable, { createTheme } from "react-data-table-component";
 import Axios from "./axios";
 import swal from "sweetalert";
-import { Button } from "reactstrap";
+import { Button, Row, Col, Label, Input } from "reactstrap";
 import { withRouter } from "react-router-dom";
+import axios from "./axios";
 const EventTable = forwardRef((props, ref) => {
   const [overlayLoader, setOverlayLoader] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState();
+  const [notificationText, setNotificationText] = useState("");
   const [progress, setProgress] = useState(true);
   const [data, setData] = useState([]);
   createTheme("solarized", {
@@ -29,7 +29,7 @@ const EventTable = forwardRef((props, ref) => {
   });
 
   useEffect(() => {
-    if(props.data != null){
+    if (props.data != null) {
       setProgress(false);
     }
   }, [props.data]);
@@ -61,16 +61,38 @@ const EventTable = forwardRef((props, ref) => {
   };
   const handleEditAction = (value) => {
     setOverlayLoader(true);
-    Axios.get("/events/read-for-admin/"+value.id)
-    .then(u=> {
+    Axios.get("/events/read-for-admin/" + value.id).then((u) => {
       setOverlayLoader(false);
       localStorage.setItem("eventDataToUpdate", JSON.stringify(u));
-      return props.history.push('/admin/manage-events');
-    })
-    
+      return props.history.push("/admin/manage-events");
+    });
   };
   const handleDownloadAction = (value) => {
-    window.open("http://162.241.71.139:5000/v1/events/download-id-proofs/" + value.id, "_blank");
+    window.open(
+      "http://162.241.71.139:5000/v1/events/download-id-proofs/" + value.id,
+      "_blank"
+    );
+  };
+  const notifyAttendees = () => {
+    setIsSaving(true);
+    axios
+      .post("/events/notify", {
+        eventId: selectedEventId,
+        message: notificationText,
+      })
+      .then((u) => {
+        setSelectedEventId();
+        setShowModal(false);
+        setIsSaving(false);
+        setNotificationText("");
+        swal("All attendies notified!", {
+          icon: "success",
+        });
+      });
+  };
+  const handleNotify = (value) => {
+    setSelectedEventId(value.id);
+    setShowModal(!showModal);
   };
   const columns = useMemo(() => [
     {
@@ -96,6 +118,22 @@ const EventTable = forwardRef((props, ref) => {
     {
       name: "Ends On",
       selector: "liveTo",
+    },
+    {
+      cell: (row) => (
+        <Button
+          style={{ padding: "15px" }}
+          className="btn btn-primary"
+          onClick={() => handleNotify(row)}
+        >
+          <i className="tim-icons icon-bell-55" />
+        </Button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      name: "Notify",
+      selector: "Notify",
     },
     {
       cell: (row) => (
@@ -164,6 +202,58 @@ const EventTable = forwardRef((props, ref) => {
 
   return (
     <>
+      {showModal ? (
+        <div className="Modal-Root">
+          <div className="resolve-card">
+            <Row>
+              <Col md="12">
+                <h3
+                  style={{
+                    paddingTop: "18px",
+                  }}
+                >
+                  Notify Attendees
+                </h3>
+              </Col>
+              <Col md="12" style={{ paddingBottom: "16px" }}>
+                <Label>Message in Notification</Label>
+                <Input
+                  type="textarea"
+                  onChange={(e) => setNotificationText(e.target.value)}
+                />
+              </Col>
+            </Row>
+            <Row className="justify-content-between">
+              <Col
+                md="12"
+                xs="12"
+                className="d-flex justify-content-end"
+                style={{ padding: "18px" }}
+              >
+                <Button
+                  color="warning"
+                  onClick={() => {
+                    setIsSaving(false);
+                    setShowModal(false);
+                    setSelectedEventId();
+                    notifyAttendees();
+                    setNotificationText("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="success"
+                  disabled={isSaving}
+                  onClick={notifyAttendees}
+                >
+                  {isSaving ? "Notifying..." : "Notify"}
+                </Button>
+              </Col>
+            </Row>
+          </div>
+        </div>
+      ) : null}
       <div
         className="loading-overlay"
         style={{ display: overlayLoader ? "flex" : "none" }}
